@@ -250,9 +250,12 @@ class Driver
     public function getYieldArrays($sql = null, $bind = [])
     {
         if ($this->execute($sql, $bind)) {
-            while ($result = $this->statement->fetch(\PDO::FETCH_ASSOC)) {
+            $statement = $this->statement;
+            $this->statement = null;
+            while ($result = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 yield $result;
             }
+            $statement->closeCursor();
         }
     }
 
@@ -313,9 +316,12 @@ class Driver
     public function getYieldObjects($sql = null, $bind = [])
     {
         if ($this->execute($sql, $bind)) {
-            while ($result = $this->statement->fetchObject()) {
+            $statement = $this->statement;
+            $this->statement = null;
+            while ($result = $statement->fetchObject()) {
                 yield $result;
             }
+            $statement->closeCursor();
         }
     }
 
