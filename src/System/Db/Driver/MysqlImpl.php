@@ -34,7 +34,6 @@ class MysqlImpl extends Driver
      *
      * @param string $table 表名
      * @param object /array(object) $obj 要插入数据库的对象或对象数组，对象属性需要和该表字段一致
-     * @return bool
      */
     public function insert($table, $obj)
     {
@@ -42,17 +41,18 @@ class MysqlImpl extends Driver
         if (is_array($obj)) {
             $vars = get_object_vars($obj[0]);
             $sql = 'INSERT INTO `' . $table . '`(`' . implode('`,`', array_keys($vars)) . '`) VALUES(' . implode(',', array_fill(0, count($vars), '?')) . ')';
-            $this->prepare($sql);
+            $statement = $this->prepare($sql);
             foreach ($obj as $o) {
                 $vars = get_object_vars($o);
-                $this->execute(null, array_values($vars));
+                $statement->execute(array_values($vars));
             }
+            $statement->closeCursor();
         } else {
             $vars = get_object_vars($obj);
             $sql = 'INSERT INTO `' . $table . '`(`' . implode('`,`', array_keys($vars)) . '`) VALUES(' . implode(',', array_fill(0, count($vars), '?')) . ')';
-            $this->execute($sql, array_values($vars));
+            $statement = $this->execute($sql, array_values($vars));
+            $statement->closeCursor();
         }
-        return true;
     }
 
     /**
@@ -61,7 +61,6 @@ class MysqlImpl extends Driver
      * @param string $table 表名
      * @param object $obj 要插入数据库的对象，对象属性需要和该表字段一致
      * @param string $primaryKey 主键
-     * @return bool
      * @throws DbException
      */
     public function update($table, $obj, $primaryKey)
@@ -98,7 +97,8 @@ class MysqlImpl extends Driver
         $sql = 'UPDATE `' . $table . '` SET ' . implode(',', $fields) . ' WHERE ' . $where;
         $fieldValues[] = $whereValue;
 
-        return $this->execute($sql, $fieldValues);
+        $statement = $this->execute($sql, $fieldValues);
+        $statement->closeCursor();
     }
 
     /**
@@ -122,11 +122,11 @@ class MysqlImpl extends Driver
      * 删除表
      *
      * @param string $table 表名
-     * @return bool
      */
     public function dropTable($table)
     {
-        return $this->execute('DROP TABLE IF EXISTS `' . $table . '`');
+        $statement = $this->execute('DROP TABLE IF EXISTS `' . $table . '`');
+        $statement->closeCursor();
     }
 
 }

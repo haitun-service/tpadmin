@@ -20,6 +20,8 @@ class Driver
 
     protected $config = [];
 
+    protected $transactions = 0; // 开启的事务数，防止嵌套
+
     public function __construct($config)
     {
         $this->config = $config;
@@ -62,7 +64,7 @@ class Driver
      * 执行 sql 语句
      *
      * @param string $sql 查询语句
-     * @return \PDOStatement SQL预编译结果对象
+     * @return \PDOStatement
      * @throws DbException
      */
     public function prepare($sql, array $driverOptions = [])
@@ -74,8 +76,7 @@ class Driver
             throw new DbException($statement->errorCode() . '：' . $statement->errorInfo() . ' SQL=' . $sql);
         }
 
-        $this->statement = $statement;
-        return $this->statement;
+        return $statement;
     }
 
     /**
@@ -83,78 +84,34 @@ class Driver
      *
      * @param string $sql 查询语句
      * @param array $bind 占位参数
-     * @return true 执行成功
+     * @return \PDOStatement
      * @throws DbException
      */
     public function execute($sql = null, $bind = [])
     {
-        if ($sql === null) {
-            if ($this->statement == null) {
-                throw new DbException('没有预编译SQL！');
-            }
+        $statement = null;
 
-            if (!$this->statement->execute($bind)) {
-                $error = $this->statement->errorInfo();
-                //printR($error);
+        if (count($bind) > 0) {
+            $statement = $this->prepare($sql);
+
+            if (!$statement->execute($bind)) {
+                $error = $statement->errorInfo();
+                //print_r($error);
                 throw new DbException($error[1] . '：' . $error[2]);
             }
-
-            return true;
         } else {
-            $this->free();
 
-            if (count($bind) > 0) {
-                $this->prepare($sql);
-                return $this->execute(null, $bind);
-            } else {
-                if (!isset($this->connection)) $this->connect();
+            if (!isset($this->connection)) $this->connect();
 
-                $statement = $this->connection->query($sql);
-                if ($statement === false) {
-                    $error = $this->connection->errorInfo();
-                    // printR($error);
-                    throw new DbException($error[1] . '：' . $error[2] . ' SQL=' . $sql);
-                }
-                $this->statement = $statement;
-
-                return true;
+            $statement = $this->connection->query($sql);
+            if ($statement === false) {
+                $error = $this->connection->errorInfo();
+                // print_r($error);
+                throw new DbException($error[1] . '：' . $error[2] . ' SQL=' . $sql);
             }
         }
-    }
 
-    /**
-     * 释放查询结果
-     *
-     * @return \PDOStatement
-     */
-    public function getStatement()
-    {
-        return $this->statement;
-    }
-
-    /**
-     * 释放查询结果
-     *
-     * @return bool 是否释放成功
-     */
-    public function free()
-    {
-        if ($this->statement) $this->statement->closeCursor();
-        $this->statement = null;
-        return true;
-    }
-
-    /**
-     * 最后一次查询影响到的记录条数
-     * @return int | bool 条数/失败
-     * @throws DbException
-     */
-    public function rowCount()
-    {
-        if ($this->statement == null) {
-            throw new DbException('没有预编译SQL！');
-        }
-        return $this->statement->rowCount();
+        return $statement;
     }
 
     /**
@@ -166,9 +123,10 @@ class Driver
      */
     public function getValue($sql = null, $bind = [])
     {
-        $this->execute($sql, $bind);
-        $row = $this->statement->fetch(\PDO::FETCH_NUM);
-        return $row[0];
+        $statement = $this->execute($sql, $bind);
+        $tuple = $statement->fetch(\PDO::FETCH_NUM);
+        $statement->closeCursor();
+        return $tuple[0];
     }
 
     /**
@@ -180,8 +138,10 @@ class Driver
      */
     public function getValues($sql = null, $bind = [])
     {
-        $this->execute($sql, $bind);
-        return $this->statement->fetchAll(\PDO::FETCH_COLUMN);
+        $statement = $this->execute($sql, $bind);
+        $values = $statement->fetchAll(\PDO::FETCH_COLUMN);
+        $statement->closeCursor();
+        return $values;
     }
 
     /**
@@ -193,11 +153,11 @@ class Driver
      */
     public function getYieldValues($sql = null, $bind = [])
     {
-        if ($this->execute($sql, $bind)) {
-            while ($row = $this->statement->fetch(\PDO::FETCH_NUM)) {
-                yield $row[0];
-            }
+        $statement = $this->execute($sql, $bind);
+        while ($tuple = $statement->fetch(\PDO::FETCH_NUM)) {
+            yield $tuple[0];
         }
+        $statement->closeCursor();
     }
 
     /**
@@ -210,8 +170,10 @@ class Driver
      */
     public function getKeyValues($sql = null, $bind = [])
     {
-        $this->execute($sql, $bind);
-        return $this->statement->fetchAll(\PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN);
+        $statement = $this->execute($sql, $bind);
+        $keyValues = $statement->fetchAll(\PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN);
+        $statement->closeCursor();
+        return $keyValues;
     }
 
     /**
@@ -223,8 +185,10 @@ class Driver
      */
     public function getArray($sql = null, $bind = [])
     {
-        $this->execute($sql, $bind);
-        return $this->statement->fetch(\PDO::FETCH_ASSOC);
+        $statement = $this->execute($sql, $bind);
+        $array = $statement->fetch(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $array;
     }
 
     /**
@@ -236,8 +200,10 @@ class Driver
      */
     public function getArrays($sql = null, $bind = [])
     {
-        $this->execute($sql, $bind);
-        return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement = $this->execute($sql, $bind);
+        $arrays = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $arrays;
     }
 
     /**
@@ -249,14 +215,11 @@ class Driver
      */
     public function getYieldArrays($sql = null, $bind = [])
     {
-        if ($this->execute($sql, $bind)) {
-            $statement = $this->statement;
-            $this->statement = null;
-            while ($result = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                yield $result;
-            }
-            $statement->closeCursor();
+        $statement = $this->execute($sql, $bind);
+        while ($result = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            yield $result;
         }
+        $statement->closeCursor();
     }
 
     /**
@@ -269,8 +232,9 @@ class Driver
      */
     public function getKeyArrays($sql = null, $bind = [], $key)
     {
-        $this->execute($sql, $bind);
-        $arrays = $this->statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement = $this->execute($sql, $bind);
+        $arrays = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
 
         $result = [];
         foreach ($arrays as $array) {
@@ -289,8 +253,10 @@ class Driver
      */
     public function getObject($sql = null, $bind = [])
     {
-        $this->execute($sql, $bind);
-        return $this->statement->fetchObject();
+        $statement = $this->execute($sql, $bind);
+        $object = $statement->fetchObject();
+        $statement->closeCursor();
+        return $object;
     }
 
     /**
@@ -302,8 +268,10 @@ class Driver
      */
     public function getObjects($sql = null, $bind = [])
     {
-        $this->execute($sql, $bind);
-        return $this->statement->fetchAll(\PDO::FETCH_OBJ);
+        $statement = $this->execute($sql, $bind);
+        $objects = $statement->fetchAll(\PDO::FETCH_OBJ);
+        $statement->closeCursor();
+        return $objects;
     }
 
     /**
@@ -315,14 +283,11 @@ class Driver
      */
     public function getYieldObjects($sql = null, $bind = [])
     {
-        if ($this->execute($sql, $bind)) {
-            $statement = $this->statement;
-            $this->statement = null;
-            while ($result = $statement->fetchObject()) {
-                yield $result;
-            }
-            $statement->closeCursor();
+        $statement = $this->execute($sql, $bind);
+        while ($result = $statement->fetchObject()) {
+            yield $result;
         }
+        $statement->closeCursor();
     }
 
     /**
@@ -335,8 +300,10 @@ class Driver
      */
     public function getKeyObjects($sql = null, $bind = [], $key)
     {
-        $this->execute($sql, $bind);
-        $objects = $this->statement->fetchAll(\PDO::FETCH_OBJ);
+        $statement = $this->execute($sql, $bind);
+        $objects = $statement->fetchAll(\PDO::FETCH_OBJ);
+        $statement->closeCursor();
+
         $result = [];
         foreach ($objects as $object) {
             $result[$object->$key] = $object;
@@ -349,7 +316,6 @@ class Driver
      *
      * @param string $table 表名
      * @param object /array(object) $obj 要插入数据库的对象或对象数组，对象属性需要和该表字段一致
-     * @return bool
      */
     public function insert($table, $obj)
     {
@@ -357,18 +323,18 @@ class Driver
         if (is_array($obj)) {
             $vars = get_object_vars($obj[0]);
             $sql = 'INSERT INTO ' . $table . '(' . implode(',', array_keys($vars)) . ') VALUES(' . implode(',', array_fill(0, count($vars), '?')) . ')';
-            $this->prepare($sql);
+            $statement = $this->prepare($sql);
             foreach ($obj as $o) {
                 $vars = get_object_vars($o);
-                $this->execute(null, array_values($vars));
+                $statement->execute(array_values($vars));
             }
+            $statement->closeCursor();
         } else {
             $vars = get_object_vars($obj);
             $sql = 'INSERT INTO ' . $table . '(' . implode(',', array_keys($vars)) . ') VALUES(' . implode(',', array_fill(0, count($vars), '?')) . ')';
-            $this->execute($sql, array_values($vars));
+            $statement = $this->execute($sql, array_values($vars));
+            $statement->closeCursor();
         }
-
-        return true;
     }
 
     /**
@@ -377,7 +343,6 @@ class Driver
      * @param string $table 表名
      * @param object $obj 要插入数据库的对象，对象属性需要和该表字段一致
      * @param string $primaryKey 主键
-     * @return bool
      * @throws DbException
      */
     public function update($table, $obj, $primaryKey)
@@ -414,7 +379,8 @@ class Driver
         $sql = 'UPDATE ' . $table . ' SET ' . implode(',', $fields) . ' WHERE ' . $where;
         $fieldValues[] = $whereValue;
 
-        return $this->execute($sql, $fieldValues);
+        $statement = $this->execute($sql, $fieldValues);
+        $statement->closeCursor();
     }
 
     /**
@@ -471,49 +437,55 @@ class Driver
      * 删除表
      *
      * @param string $table 表名
-     * @return bool
      */
     public function dropTable($table)
     {
-        return $this->execute('DROP TABLE IF EXISTS ' . $table);
+        $statement = $this->execute('DROP TABLE IF EXISTS ' . $table);
+        $statement->closeCursor();
     }
 
     /**
      * 开启事务处理
      *
-     * @return bool
      */
     public function startTransaction()
     {
-        return $this->beginTransaction();
+        $this->beginTransaction();
     }
 
     public function beginTransaction()
     {
         $this->connect();
-        return $this->connection->beginTransaction();
+
+        $this->transactions++;
+        if ($this->transactions == 1) {
+            $this->connection->beginTransaction();
+        }
     }
 
     /**
      * 事务回滚
-     *
-     * @return bool
      */
     public function rollback()
     {
         $this->connect();
-        return $this->connection->rollBack();
+        $this->transactions--;
+        if ($this->transactions == 0) {
+            $this->connection->rollBack();
+        }
     }
 
     /**
      * 事务提交
-     *
-     * @return bool
      */
     public function commit()
     {
         $this->connect();
-        return $this->connection->commit();
+
+        $this->transactions--;
+        if ($this->transactions == 0) {
+            $this->connection->commit();
+        }
     }
 
     /**
