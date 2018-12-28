@@ -157,29 +157,29 @@ class Request
 
     private static function formatInt($value)
     {
-        return is_array($value) ? array_map(array('\\Haitun\\Service\\M\\System\\Request', 'formatInt'), $value) : intval($value);
+        return is_array($value) ? array_map(array('\\Haitun\\Service\\TpAdmin\\System\\Request', 'formatInt'), $value) : intval($value);
     }
 
     private static function formatFloat($value)
     {
-        return is_array($value) ? array_map(array('\\Haitun\\Service\\M\\System\\Request', 'formatFloat'), $value) : floatval($value);
+        return is_array($value) ? array_map(array('\\Haitun\\Service\\TpAdmin\\System\\Request', 'formatFloat'), $value) : floatval($value);
     }
 
     private static function formatBool($value)
     {
-        return is_array($value) ? array_map(array('\\Haitun\\Service\\M\\System\\Request', 'formatBool'), $value) : boolval($value);
+        return is_array($value) ? array_map(array('\\Haitun\\Service\\TpAdmin\\System\\Request', 'formatBool'), $value) : boolval($value);
     }
 
     private static function formatString($value)
     {
-        return is_array($value) ? array_map(array('\\Haitun\\Service\\M\\System\\Request', 'formatString'), $value) : htmlspecialchars($value);
+        return is_array($value) ? array_map(array('\\Haitun\\Service\\TpAdmin\\System\\Request', 'formatString'), $value) : htmlspecialchars($value);
     }
 
     // 过滤  脚本,样式，框架
     private static function formatHtml($value)
     {
         if (is_array($value)) {
-            return array_map(array('\\Haitun\\Service\\M\\System\\Request', 'formatHtml'), $value);
+            return array_map(array('\\Haitun\\Service\\TpAdmin\\System\\Request', 'formatHtml'), $value);
         } else {
             $value = preg_replace("@<script(.*?)</script>@is", '', $value);
             $value = preg_replace("@<style(.*?)</style>@is", '', $value);

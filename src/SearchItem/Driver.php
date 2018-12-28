@@ -82,10 +82,16 @@ abstract class Driver
                 break;
             default:
                 if (isset($params['keyValues'])) {
-                    $keyValues = trim($params['keyValues']);
-                    if ($keyValues) {
-                        $keyValues = $this->parseKeyValues($keyValues);
-                        $this->keyValues = $keyValues;
+                    if (is_array($params['keyValues'])) {
+                        $this->keyValues = $params['keyValues'];
+                    } elseif (is_object($params['keyValues'])) {
+                        $this->keyValues = get_object_vars($params['keyValues']);
+                    } else {
+                        $keyValues = trim($params['keyValues']);
+                        if ($keyValues) {
+                            $keyValues = $this->parseKeyValues($keyValues);
+                            $this->keyValues = $keyValues;
+                        }
                     }
                 }
         }

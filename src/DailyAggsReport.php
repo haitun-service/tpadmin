@@ -16,81 +16,18 @@ trait DailyAggsReport
 {
     use Base;
 
-
     /*
-     * 在子类中必须定义 $config 属性，示例值如下：
+     * 配置项
     */
-    public $config = array(
-
-        'name' => '仓库每日拣货核对汇总',
-
-        'search' => array(
-            'warehouse_id' => array(
-                'name' => '仓库',
-                'driver' => '\Haitun\Service\TpAdmin\SearchItem\SearchItemInt',
-                'uiType' => 'select',
-                'keyValueType' => 'sql',
-                'keyValues' => ''
-            ),
-
-            'create_time' => array(
-                'name' => '日期',
-                'driver' => '\Haitun\Service\TpAdmin\SearchItem\SearchItemDateRange'
-            )
-        ),
-
-        'aggsKey' => array(
-            'name' => '仓库',
-            'sql' => 'SELECT DISTINCT DATE_FORMAT(create_time, \'%Y-%m-%d\') AS aggs_date, warehouse_id AS aggs_key FROM ws_pick_detail',
-            'keyValueType' => 'sql',
-            'keyValues' => ''
-        ),
-
-        'aggsValues' => array(
-            array(
-                'name' => '总新增订单数',
-                'sql' => 'SELECT COUNT(*) FROM ws_pick_detail WHERER create_time>=\':aggs_date 00:00:00\' AND create_time<=\':aggs_date 23:59:59\' AND warehouser_id=:aggs_key'
-            ),
-            array(
-                'name' => '总生拣货任务数',
-                'sql' => 'SELECT COUNT(*) FROM ws_pick_detail WHERER create_time>=\':aggs_date 00:00:00\' AND create_time<=\':aggs_date 23:59:59\' AND warehouser_id=:aggs_key'
-            ),
-            array(
-                'name' => '总核对订单数',
-                'sql' => 'SELECT COUNT(*) FROM ws_pick_detail WHERER create_time>=\':aggs_date 00:00:00\' AND create_time<=\':aggs_date 23:59:59\' AND warehouser_id=:aggs_key'
-            ),
-            array(
-                'name' => '总交运订单数',
-                'sql' => 'SELECT COUNT(*) FROM ws_pick_detail WHERER create_time>=\':aggs_date 00:00:00\' AND create_time<=\':aggs_date 23:59:59\' AND warehouser_id=:aggs_key'
-            )
-        ),
-
-        'cache' => true,
-    );
-
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        Be::getRuntime()->setDbConfig(array(
-            'host' => config('database.hostname'), // 主机名
-            'port' => config('database.hostport'), // 端口号
-            'user' => config('database.username'), // 用户名
-            'pass' => config('database.password'), // 密码
-            'name' => config('database.database') // 数据库名称
-        ))
-            ->setFramework('tp5')
-            ->setPathRoot(dirname(APP_PATH))
-            ->setDirData('public/tpadmin/data')
-            ->setDirCache('runtime/tpadmin/cache');
-    }
+    public $config = array();
 
     /**
      * 列表展示
      */
     public function lists()
     {
+
+        Response::set('config', $this->config);
 
         if (Request::isPost()) {
 
@@ -126,9 +63,9 @@ trait DailyAggsReport
             }
 
             $db = Be::getDb();
-
             $total = null;
             $tmpSql = 'SELECT COUNT(*) FROM (' . $sql . ') t';
+
             if ($cache) {
                 $cacheKey = 'DailyAggsReport:' . $tmpSql;
                 $cacheValue = Cache::get($cacheKey);
@@ -150,11 +87,11 @@ trait DailyAggsReport
                 if ($cacheValue) {
                     $rows = $cacheValue;
                 } else {
-                    $rows = $db->getValue($tmpSql);
+                    $rows = $db->getObjects($tmpSql);
                     Cache::set($cacheKey, $rows, 600);
                 }
             } else {
-                $rows = $db->getValue($tmpSql);
+                $rows = $db->getObjects($tmpSql);
             }
 
             $currentDate = date('Y-m-d');
@@ -165,8 +102,8 @@ trait DailyAggsReport
 
                 $i = 0;
                 foreach ($this->config['aggsValues'] as $aggsValue) {
-
                     $var = 'aggs_value_' . $i;
+                    $i++;
 
                     // 启用缓存，并且非今天时，取缓存数据
                     if ($cache && $aggsDate != $currentDate) {
@@ -180,7 +117,10 @@ trait DailyAggsReport
                     }
 
                     $sql = $aggsValue['sql'];
-                    $value = $db->getValue($sql, array(':aggs_date' => $aggsDate, ':aggs_key' => $aggsKey));
+                    $sql = str_replace(':aggs_date', $aggsDate, $sql);
+                    $sql = str_replace(':aggs_key', $aggsKey, $sql);
+
+                    $value = $db->getValue($sql);
 
                     if ($cache && $aggsDate != $currentDate) { // 启用缓存时写入
                         $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
@@ -188,15 +128,14 @@ trait DailyAggsReport
                     }
 
                     $row->$var = $value;
-                    $i++;
                 }
             }
 
             Response::set('total', $total);
             Response::set('rows', $rows);
-            Response::set('config', $this->config);
             Response::ajax();
         }
+
 
         Response::setTitle($this->config['name']);
         Response::display('DailyAggsReport.lists');
@@ -236,7 +175,7 @@ trait DailyAggsReport
 
         $db = Be::getDb();
 
-        $rows = $db->getYieldObjects($sql);
+        $rows = $db->getObjects($sql);
 
         $currentDate = date('Y-m-d');
 

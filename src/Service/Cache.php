@@ -2,7 +2,7 @@
 namespace Haitun\Service\TpAdmin\Service;
 
 
-use Haitun\Service\TpAdmin\Util\String;
+use Haitun\Service\TpAdmin\Util\Str;
 use Haitun\Service\TpAdmin\System\Be;
 use Haitun\Service\TpAdmin\System\Db;
 use Haitun\Service\TpAdmin\System\db\DbException;
@@ -40,7 +40,7 @@ class Cache extends Service
      */
     public function updateRow($name)
     {
-        $tableName = String::snakeCase($name);
+        $tableName = Str::camel2Underline($name);
         $db = Be::getDb();
         if (!$db->getValue('SHOW TABLES LIKE \'' . $tableName . '\'')) {
             throw new \Exception('未找到名称为 ' . $tableName . ' 的数据库表！');
@@ -60,7 +60,7 @@ class Cache extends Service
         $code = '<?php' . "\n";
         $code .= 'namespace Cache\\Row;' . "\n";
         $code .= "\n";
-        $code .= 'class ' . $name . ' extends \\Haitun\\Service\\M\\System\\Row' . "\n";
+        $code .= 'class ' . $name . ' extends \\Haitun\\Service\\TpAdmin\\System\\Row' . "\n";
         $code .= '{' . "\n";
         $code .= '    protected $tableName = \'' . $tableName . '\'; // 表名' . "\n";
         $code .= '    protected $primaryKey = \'' . $primaryKey . '\'; // 主键' . "\n";
@@ -92,7 +92,7 @@ class Cache extends Service
      */
     public function updateTable($name)
     {
-        $tableName = String::snakeCase($name);
+        $tableName = Str::camel2Underline($name);
         $db = Be::getDb();
         $fields = $db->getObjects('SHOW FULL FIELDS FROM ' . $tableName);
 
@@ -108,7 +108,7 @@ class Cache extends Service
         $code = '<?php' . "\n";
         $code .= 'namespace Cache\\Table;' . "\n";
         $code .= "\n";
-        $code .= 'class ' . $name . ' extends \\Haitun\\Service\\M\\System\\Table' . "\n";
+        $code .= 'class ' . $name . ' extends \\Haitun\\Service\\TpAdmin\\System\\Table' . "\n";
         $code .= '{' . "\n";
         $code .= '    protected $tableName = \'' . $tableName . '\'; // 表名' . "\n";
         $code .= '    protected $primaryKey = \'' . $primaryKey . '\'; // 主键' . "\n";
@@ -136,12 +136,12 @@ class Cache extends Service
      */
     public function updateTableConfig($name, $fields)
     {
-        $tableName = String::snakeCase($name);
+        $tableName = Str::camel2Underline($name);
 
         $code = '<?php' . "\n";
         $code .= 'namespace Data\\TableConfig;' . "\n";
         $code .= "\n";
-        $code .= 'class ' . $name . ' extends \\Haitun\\Service\\M\\System\\TableConfig' . "\n";
+        $code .= 'class ' . $name . ' extends \\Haitun\\Service\\TpAdmin\\System\\TableConfig' . "\n";
         $code .= '{' . "\n";
         $code .= '    protected $tableName = \'' . $tableName . '\'; // 表名' . "\n";
         $code .= '    protected $fields = ' . var_export($fields, true) . '; // 字段列表' . "\n";
@@ -281,17 +281,17 @@ class Cache extends Service
      */
     public function updateTemplate($template, $theme)
     {
-        $fileTheme = Be::getRuntime()->getPathRoot() . '/vendor/haitun/service/src/M/Theme/' . $theme . '/' . $theme . '.php';
+        $fileTheme = Be::getRuntime()->getPathRoot() . '/vendor/haitun-service/tpadmin/src/Theme/' . $theme . '/' . $theme . '.php';
         if (!file_exists($fileTheme)) {
             throw new \Exception('主题 ' . $theme . ' 不存在！');
         }
 
-        $fileTemplate = Be::getRuntime()->getPathRoot() . '/vendor/haitun/service//src/M/Template/' .  $template . '.php';
+        $fileTemplate = Be::getRuntime()->getPathRoot() . '/vendor/haitun-service/tpadmin/src/Template/' .  str_replace('.', '/', $template) . '.php';
         if (!file_exists($fileTemplate)) {
             throw new \Exception('模板 ' . $template . ' 不存在！');
         }
 
-        $path = Be::getRuntime()->getPathCache() .  '/Template/' . $theme . '/' . $template . '.php';
+        $path = Be::getRuntime()->getPathCache() .  '/Template/' . $theme . '/' . str_replace('.', '/', $template) . '.php';
         $dir = dirname($path);
         if (!is_dir($dir)) mkdir($dir, 0777, true);
 
@@ -414,12 +414,20 @@ class Cache extends Service
             }
         }
 
+        $templates = explode('.', $template);
+        $className = array_pop($templates);
+
+        $namespaceSuffix = '';
+        if (count($templates)) {
+            $namespaceSuffix = implode('\\', $templates);
+        }
+
         $codePhp = '<?php' . "\n";
-        $codePhp .= 'namespace Cache\\Template\\' . $theme . ';' . "\n";
+        $codePhp .= 'namespace Cache\\Template\\' . $theme . '\\' . $namespaceSuffix . ';' . "\n";
         $codePhp .= "\n";
         $codePhp .= $codeUse;
         $codePhp .= "\n";
-        $codePhp .= 'class ' . $template . ' extends \\Haitun\\Service\\M\\System\\Template' . "\n";
+        $codePhp .= 'class ' . $className . ' extends \\Haitun\\Service\\TpAdmin\\System\\Template' . "\n";
         $codePhp .= '{' . "\n";
         $codePhp .= "\n";
         $codePhp .= '  public function display()' . "\n";

@@ -32,7 +32,7 @@ abstract class Be
 
         $config = self::$runtime->getDbConfig();
 
-        $class = 'Haitun\\Service\\M\\System\\Db\\Driver\\MysqlImpl';
+        $class = 'Haitun\\Service\\TpAdmin\\System\\Db\\Driver\\MysqlImpl';
         self::$cache[$key] = new $class($config);
         return self::$cache[$key];
     }
@@ -46,7 +46,7 @@ abstract class Be
      */
     public static function getService($service)
     {
-        $class = 'Haitun\\Service\\M\\Service\\' . $service;
+        $class = 'Haitun\\Service\\TpAdmin\\Service\\' . $service;
         if (isset(self::$cache[$class])) return self::$cache[$class];
 
         if (!class_exists($class)) throw new \Exception('服务 ' . $service . ' 不存在！');
@@ -69,8 +69,8 @@ abstract class Be
 
         $path = self::$runtime->getPathCache() . '/Row/' . $row . '.php';
         //if (!file_exists($path)) {
-            $serviceSystem = Be::getService('Cache');
-            $serviceSystem->updateRow($row);
+        $serviceSystem = Be::getService('Cache');
+        $serviceSystem->updateRow($row);
         //}
 
         include_once $path;
@@ -96,8 +96,8 @@ abstract class Be
 
         $path = self::$runtime->getPathCache() . '/Table/' . $table . '.php';
         //if (!file_exists($path)) {
-            $serviceCache = Be::getService('Cache');
-            $serviceCache->updateTable($table);
+        $serviceCache = Be::getService('Cache');
+        $serviceCache->updateTable($table);
         //}
 
         include_once $path;
@@ -151,10 +151,10 @@ abstract class Be
         if (isset(self::$cache[$class])) return self::$cache[$class];
 
         $path = self::$runtime->getPathCache() . '/Template/' .  $theme . '/' . str_replace('.', '/', $template) . '.php';
-        //if (!file_exists($path)) {
+        if (!file_exists($path)) {
             $serviceSystem = Be::getService('Cache');
             $serviceSystem->updateTemplate($template, $theme);
-        //}
+        }
 
         include_once $path;
 

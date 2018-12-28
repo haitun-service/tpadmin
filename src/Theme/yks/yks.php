@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $this->title; ?> PDA拣货系统</title>
 
-    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/bootstrap.min.css?v=3.3.6')); ?>" rel="stylesheet">
-    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/font-awesome.css?v=4.4.0')); ?>" rel="stylesheet">
+    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/bootstrap.min.css')); ?>" rel="stylesheet">
+    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/font-awesome.css')); ?>" rel="stylesheet">
 
-    <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/jquery.min.js?v=2.1.4')); ?>"></script>
-    <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/bootstrap.min.js?v=3.3.6')); ?>"></script>
+    <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/jquery.min.js')); ?>"></script>
+    <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/bootstrap.min.js')); ?>"></script>
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/layer.min.js')); ?>"></script>
 
     <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/bootstrap-table.min.css')); ?>" rel="stylesheet">
