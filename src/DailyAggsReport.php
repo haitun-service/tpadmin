@@ -227,7 +227,9 @@ trait DailyAggsReport
                 }
 
                 $sql = $aggsValue['sql'];
-                $value = $db->getValue($sql, array(':aggs_date' => $aggsDate, ':aggs_key' => $aggsKey));
+                $sql = str_replace(':aggs_date', $aggsDate, $sql);
+                $sql = str_replace(':aggs_key', $aggsKey, $sql);
+                $value = $db->getValue($sql);
 
                 if ($cache && $aggsDate != $currentDate) { // 启用缓存时写入
                     $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
