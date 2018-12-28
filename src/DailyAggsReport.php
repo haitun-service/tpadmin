@@ -100,6 +100,16 @@ trait DailyAggsReport
                 $aggsDate = $row->aggs_date;
                 $aggsKey = $row->aggs_key;
 
+                $aggsKeyName = $aggsKey;
+                if (isset($this->config['aggsKey']['keyValues']) && is_array($this->config['aggsKey']['keyValues']) ) {
+                    if (isset($this->config['aggsKey']['keyValues'][$aggsKey])) {
+                        $aggsKeyName = $this->config['aggsKey']['keyValues'][$aggsKey];
+                    } else {
+                        $aggsKeyName = '-';
+                    }
+                }
+                $row->aggs_key_name = $aggsKeyName;
+
                 $i = 0;
                 foreach ($this->config['aggsValues'] as $aggsValue) {
                     $var = 'aggs_value_' . $i;
@@ -189,9 +199,19 @@ trait DailyAggsReport
             $aggsDate = $row->aggs_date;
             $aggsKey = $row->aggs_key;
 
+            $aggsKeyName = $aggsKey;
+            if (isset($this->config['aggsKey']['keyValues']) && is_array($this->config['aggsKey']['keyValues']) ) {
+                if (isset($this->config['aggsKey']['keyValues'][$aggsKey])) {
+                    $aggsKeyName = $this->config['aggsKey']['keyValues'][$aggsKey];
+                } else {
+                    $aggsKeyName = '-';
+                }
+            }
+            $row->aggs_key_name = $aggsKeyName;
+
             $values = array();
             $values[] = $aggsDate;
-            $values[] = $aggsKey;
+            $values[] = $aggsKeyName;
 
             foreach ($this->config['aggsValues'] as $aggsValue) {
 

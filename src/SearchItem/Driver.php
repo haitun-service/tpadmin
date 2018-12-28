@@ -202,7 +202,7 @@ abstract class Driver
 
 
     public function buildWhere($condition) {
-        if (isset($condition[$this->key])) {
+        if (isset($condition[$this->key]) && $condition[$this->key]) {
             return '`' . $this->key . '`=\''.$condition[$this->key].'\'';
         }
         return '';

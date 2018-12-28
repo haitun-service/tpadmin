@@ -11,12 +11,16 @@
 
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/jquery.min.js')); ?>"></script>
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/bootstrap.min.js')); ?>"></script>
-    <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/layer.min.js')); ?>"></script>
 
     <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/bootstrap-table.min.css')); ?>" rel="stylesheet">
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/bootstrap-table.min.js')); ?>"></script>
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/bootstrap-table-zh-CN.js')); ?>"></script>
 
+    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/skin/layer.css')); ?>" rel="stylesheet">
+    <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/layer.min.js')); ?>"></script>
+
+    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/laydate/need/laydate.css')); ?>" rel="stylesheet">
+    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/laydate/skins/default/laydate.css')); ?>" rel="stylesheet">
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/laydate/laydate.js')); ?>"></script>
 
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/theme.js')); ?>"></script>
@@ -26,9 +30,9 @@
 
 <body class="gray-bg">
 <div class="wrapper wrapper-content animated fadeInRight">
-<!--{body}-->
+    <!--{body}-->
 
-<!--{/body}-->
+    <!--{/body}-->
 </div>
 </body>
 </html>

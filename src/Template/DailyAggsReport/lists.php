@@ -76,28 +76,27 @@
                     <form id="searchForm" class="search-form">
                         <div class="row">
                             <div class="clearfix">
-                                <div class="col-md-3">
-                                    <div class="input-group">
-                                        <span class="input-group-addon bold">内单号</span>
-                                        <input class="form-control" type="text" id="orders_unique_id" name="orders_unique_id"/>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="input-group">
-                                        <span class="input-group-addon bold">平台</span>
-                                        <input class="form-control" type="text" id="platform_code" name="platform_code"/>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <label class="input-group-addon bold">创建时间</label>
-                                        <input class="form-control" type="text" id="create_start" name="create_start"
-                                               onclick="laydate({istime: true, format: 'YYYY-MM-DD'})" placeholder="开始日期" readonly/>
-                                        <span class="input-group-addon">~</span>
-                                        <input class="form-control" type="text" id="create_end" name="create_end"
-                                               onclick="laydate({istime: true, format: 'YYYY-MM-DD'})" placeholder="结束日期" readonly/>
-                                    </div>
-                                </div>
+                                <?php
+                                $colCount = 0;
+                                foreach($this->config['search'] as $key => $search) {
+                                    $cols = 3;
+                                    if (isset($search['cols'])) {
+                                        $cols = $search['cols'];
+                                    }
+
+                                    $colCount += $cols;
+                                    if ($colCount > 12) {
+                                        echo '</div></div><div class="row"><div class="clearfix">';
+                                    }
+
+                                    $driver = $search['driver'];
+                                    $searchDriver = new $driver($key, $search);
+
+                                    echo '<div class="col-md-'.$cols.'">';
+                                    echo $searchDriver->getHtml();
+                                    echo '</div>';
+                                }
+                                ?>
                             </div>
                         </div>
                         <hr/>
@@ -126,11 +125,11 @@
                     >
                         <thead>
                         <tr>
-                            <th data-align="center" data-sortable="true" data-field="aggs_date">日期</th>
-                            <th data-align="center" data-sortable="true" data-field="aggs_key"><?php echo $this->config['aggsKey']['name']; ?></th>
+                            <th data-align="center" data-field="aggs_date">日期</th>
+                            <th data-align="center" data-field="aggs_key_name"><?php echo $this->config['aggsKey']['name']; ?></th>
                             <?php
                             foreach ($this->config['aggsValues'] as $i => $aggsValue) {
-                                 ?>
+                                ?>
                                 <th data-align="center" data-field="aggs_value_<?php echo $i; ?>"><?php echo $aggsValue['name']; ?></th>
                                 <?php
                             }
