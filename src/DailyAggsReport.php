@@ -185,7 +185,7 @@ trait DailyAggsReport
 
         $db = Be::getDb();
 
-        $rows = $db->getObjects($sql);
+        $rows = $db->getYieldObjects($sql);
 
         $currentDate = date('Y-m-d');
 
@@ -194,7 +194,7 @@ trait DailyAggsReport
             $cache = $this->config['cache'];
         }
 
-        foreach ($rows as &$row) {
+        foreach ($rows as $row) {
 
             $aggsDate = $row->aggs_date;
             $aggsKey = $row->aggs_key;
