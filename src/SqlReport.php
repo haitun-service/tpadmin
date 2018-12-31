@@ -19,7 +19,7 @@ trait SqlReport
      * 配置项
     */
     public $config = array();
-    
+
     /**
      * 列表展示
      */
@@ -122,7 +122,7 @@ trait SqlReport
         }
 
         Response::setTitle($this->config['name']);
-        Response::display('SqlReprot.lists');
+        Response::display('SqlReport.lists');
     }
 
     /*
