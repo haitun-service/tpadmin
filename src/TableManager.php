@@ -14,60 +14,43 @@ trait TableManager
 {
     use Base;
 
-    /*
-     * 在子类中必须定义 $config 属性，示例值如下：
+
+    // 在子类中必须定义 $config 属性，示例值如下：
     protected $config = array(
-        'base' => array(
-            'name' => '用户管理',
-            'table' => 'user'
+
+        'name' => '用户管理',
+        'table' => 'user',
+
+        'search' => array(
+
         ),
 
         'lists' => array(
+            'name' => '新建',
+        ),
 
-            'toolbar' => array(
-                'create' => '新建',
-                'export' => '导出'
-            ),
+        'create' => array(
+            'name' => '新建',
+        ),
 
-            'action' => array(
-                'detail' => '查看',
-                'edit' => '编辑',
-                'delete' => '删除',
-            ),
+        'edit' => array(
+            'name' => '编辑',
         ),
 
         'detail' => array(
-            'tabs' => array()
+            'name' => '查看',
         ),
 
-        'create' => array(),
-
-        'edit' => array(),
+        'export' => array(
+            'name' => '导出'
+        ),
 
         'delete' => array(
+            'name' => '删除',
             'field' => 'is_delete'
         ),
-
-        'export' => array(),
     );
-    */
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        Be::getRuntime()->setDbConfig(array(
-            'host' => config('database.hostname'), // 主机名
-            'port' => config('database.hostport'), // 端口号
-            'user' => config('database.username'), // 用户名
-            'pass' => config('database.password'), // 密码
-            'name' => config('database.database') // 数据库名称
-        ))
-            ->setFramework('tp5')
-            ->setPathRoot(dirname(APP_PATH))
-            ->setDirData('data')
-            ->setDirCache('runtime/m/cache');
-    }
     
     /**
      * 列表展示
