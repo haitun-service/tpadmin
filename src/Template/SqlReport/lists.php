@@ -74,7 +74,7 @@
             <div class="ibox-title">
                 <div class="ibox-content">
                     <form id="searchForm" class="search-form">
-                        <div class="row">
+                        <div class="row" style="margin-bottom: 5px;">
                             <div class="clearfix">
                                 <?php
                                 $colCount = 0;
@@ -86,7 +86,8 @@
 
                                     $colCount += $cols;
                                     if ($colCount > 12) {
-                                        echo '</div></div><div class="row"><div class="clearfix">';
+                                        $colCount = $cols;
+                                        echo '</div></div><div class="row" style="margin-bottom: 5px;"><div class="clearfix">';
                                     }
 
                                     $driver = $search['driver'];
