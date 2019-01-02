@@ -49,7 +49,11 @@ class SearchItemString extends Driver
                 case 'radio':
                     $i = 0;
                     foreach ($this->keyValues as $key => $value) {
-                        $html .= '<input type="radio" name="' . $this->key . '" id="' . $this->key . '-' . $i . '" value="' . $key . '" ' . 'class="form-control search-item-string">';
+                        $html .= '<input type="radio" name="' . $this->key . '" id="' . $this->key . '-' . $i . '" value="' . $key . '" ' . 'class="form-control search-item-string"';
+                        if ($this->defaultValue !== null && $this->defaultValue == $key) {
+                            $html .= ' checked';
+                        }
+                        $html .= ' />';
                         $html .= '<label for="' . $this->key . '-' . $i . '">';
                         $html .= $value;
                         $html .= '</label>';
@@ -61,7 +65,11 @@ class SearchItemString extends Driver
                     $html = '<select name="' . $this->key . '" id="' . $this->key . '" class="form-control search-item-string">';
                     $html .= '<option value="">请选择</option>';
                     foreach ($this->keyValues as $key => $value) {
-                        $html .= '<option value="' . $key . '" ' . '>' . $value . '</option>';
+                        $html .= '<option value="' . $key . '"';
+                        if ($this->defaultValue !== null && $this->defaultValue == $key) {
+                            $html .= ' selected';
+                        }
+                        $html .= '>' . $value . '</option>';
                     }
                     $html .= '</select>';
                     break;
@@ -80,8 +88,12 @@ class SearchItemString extends Driver
             }
 
             $html .= ' name="' . $this->key . '" id="' . $this->key . '"';
-            $html .= ' class="form-control search-item-string" />';
+            $html .= ' class="form-control search-item-string"';
         }
+        if ($this->defaultValue !== null) {
+            $html .= ' value="' . $this->defaultValue . '"';
+        }
+        $html .= ' />';
 
         $html .= '</div>';
         return $html;

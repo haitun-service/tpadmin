@@ -16,6 +16,7 @@ abstract class Driver
     protected $uiType = 'text'; // UI界面类型
     protected $keyValues = null; // 可选值键值对
     protected $autoComplete = null; // 自动完成
+    protected $defaultValue = null; // 默认值
 
     /**
      * 构造函数
@@ -52,6 +53,10 @@ abstract class Driver
         if (isset($params['autoComplete'])) {
             $this->autoComplete = $params['autoComplete'];
         }
+
+        if (isset($params['defaultValue'])) {
+            $this->defaultValue = $params['defaultValue'];
+        }
     }
 
 
@@ -63,7 +68,7 @@ abstract class Driver
     public function getHtml()
     {
         $html = '<div class="input-group">';
-        $html .= '<label class="input-group-addon bold">'.$this->name.'</label>';
+        $html .= '<label class="input-group-addon bold">' . $this->name . '</label>';
 
         $class = get_called_class();
         if (strpos($class, '\\') !== false) {
@@ -78,7 +83,11 @@ abstract class Driver
                 case 'radio':
                     $i = 0;
                     foreach ($this->keyValues as $key => $value) {
-                        $html .= '<input type="radio" name="' . $this->key . '" id="' . $this->key . '-' . $i . '" value="' . $key . '"  class="' . $class . '"' . '>';
+                        $html .= '<input type="radio" name="' . $this->key . '" id="' . $this->key . '-' . $i . '" value="' . $key . '"  class="' . $class . '"';
+                        if ($this->defaultValue !== null && $this->defaultValue == $key) {
+                            $html .= ' checked';
+                        }
+                        $html .= ' />';
                         $html .= '<label for="' . $this->key . '-' . $i . '">';
                         $html .= $value;
                         $html .= '</label>';
@@ -89,7 +98,11 @@ abstract class Driver
                 case 'checkbox':
                     $i = 0;
                     foreach ($this->keyValues as $key => $value) {
-                        $html .= '<input type="checkbox" name="' . $this->key . '" id="' . $this->key . '-' . $i . '" value="' . $key . '" class="' . $class . '"' . '>';
+                        $html .= '<input type="checkbox" name="' . $this->key . '" id="' . $this->key . '-' . $i . '" value="' . $key . '" class="' . $class . '"';
+                        if ($this->defaultValue !== null && $this->defaultValue == $key) {
+                            $html .= ' checked';
+                        }
+                        $html .= ' />';
                         $html .= '<label for="' . $this->key . '-' . $i . '">';
                         $html .= $value;
                         $html .= '</label>';
@@ -100,12 +113,20 @@ abstract class Driver
                 case 'select':
                     $html .= '<select name="' . $this->key . '" id="' . $this->key . '"  class="' . $class . '" />';
                     foreach ($this->keyValues as $key => $value) {
-                        $html .= '<option value="' . $key . '"' . '>' . $value . '</option>';
+                        $html .= '<option value="' . $key . '"';
+                        if ($this->defaultValue !== null && $this->defaultValue == $key) {
+                            $html .= ' selected';
+                        }
+                        $html .= '>' . $value . '</option>';
                     }
                     $html .= '</select>';
                     break;
                 default:
-                    $html .= '<input type="text" name="' . $this->key . '" id="' . $this->key . '" class="'.$class.'" />';
+                    $html .= '<input type="text" name="' . $this->key . '" id="' . $this->key . '" class="' . $class . '"';
+                    if ($this->defaultValue !== null) {
+                        $html .= ' value="' . $this->defaultValue . '"';
+                    }
+                    $html .= ' />';
 
             }
 
@@ -116,13 +137,25 @@ abstract class Driver
                 case 'range':
                 case 'date':
                 case 'datetime':
-                    $html .= '<input type="' . $this->uiType . '" name="' . $this->key . '" id="' . $this->key . '" class="'.$class.'" />';
+                    $html .= '<input type="' . $this->uiType . '" name="' . $this->key . '" id="' . $this->key . '" class="' . $class . '"';
+                    if ($this->defaultValue !== null) {
+                        $html .= ' value="' . $this->defaultValue . '"';
+                    }
+                    $html .= ' />';
                     break;
                 case 'textarea':
-                    $html .= '<textarea name="' . $this->key . '" id="' . $this->key . '" class="'.$class.'" ></textarea>';
+                    $html .= '<textarea name="' . $this->key . '" id="' . $this->key . '" class="' . $class . '" >';
+                    if ($this->defaultValue !== null) {
+                        $html .= $this->defaultValue;
+                    }
+                    $html .= '</textarea>';
                     break;
                 default:
-                    $html .= '<input type="text" name="' . $this->key . '" id="' . $this->key . '" class="'.$class.'" />';
+                    $html .= '<input type="text" name="' . $this->key . '" id="' . $this->key . '" class="' . $class . '"';
+                    if ($this->defaultValue !== null) {
+                        $html .= ' value="' . $this->defaultValue . '"';
+                    }
+                    $html .= ' />';
             }
         }
 
@@ -157,9 +190,10 @@ abstract class Driver
     }
 
 
-    public function buildWhere($condition) {
+    public function buildWhere($condition)
+    {
         if (isset($condition[$this->key]) && $condition[$this->key]) {
-            return '`' . $this->key . '`=\''.$condition[$this->key].'\'';
+            return '`' . $this->key . '`=\'' . $condition[$this->key] . '\'';
         }
         return '';
     }
