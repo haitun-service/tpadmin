@@ -14,8 +14,8 @@ abstract class Driver
     protected $key = ''; // 键名
     protected $name = ''; // 中文名称
     protected $uiType = 'text'; // UI界面类型
-    protected $keyValueType = 'string'; // 可选值键值对类型
     protected $keyValues = null; // 可选值键值对
+    protected $autoComplete = null; // 自动完成
 
     /**
      * 构造函数
@@ -35,67 +35,23 @@ abstract class Driver
             $this->uiType = $params['uiType'];
         }
 
-        if (isset($params['keyValueType'])) {
-            $this->keyValueType = $params['keyValueType'];
+        if (isset($params['keyValues'])) {
+            if (is_array($params['keyValues'])) {
+                $this->keyValues = $params['keyValues'];
+            } elseif (is_object($params['keyValues'])) {
+                $this->keyValues = get_object_vars($params['keyValues']);
+            } elseif (is_string($params['keyValues']) || is_numeric($params['keyValues'])) {
+                $keyValues = trim($params['keyValues']);
+                if ($keyValues) {
+                    $keyValues = $this->parseKeyValues($keyValues);
+                    $this->keyValues = $keyValues;
+                }
+            }
         }
 
-        switch ($this->keyValueType) {
-            case 'sql':
-                if (isset($params['keyValues'])) {
-                    $keyValues = trim($params['keyValues']);
-                    if ($keyValues) {
-
-                        $keyValues = explode('|', $keyValues);
-                        $sql = $keyValues[0];
-                        $cache = 0;
-                        if (count($keyValues) > 1) {
-                            $cache = intval($keyValues[1]);
-                        }
-
-                        if ($cache > 0) {
-                            $keyValues = Be::getDb()->withCache($cache)->getKeyValues($sql);
-                        } else {
-                            $keyValues = Be::getDb()->getKeyValues($sql);
-                        }
-
-                        $this->keyValues = $keyValues;
-                    }
-                }
-                break;
-            case 'eval':
-                if (isset($params['keyValues'])) {
-                    $keyValues = trim($params['keyValues']);
-                    if ($keyValues) {
-
-                        $newKeyValues = null;
-                        try {
-                            $newKeyValues = eval($keyValues);
-                        } catch (\Throwable $e) {
-
-                        }
-
-                        if (is_array($newKeyValues)) {
-                            $this->keyValues = $newKeyValues;
-                        }
-                    }
-                }
-                break;
-            default:
-                if (isset($params['keyValues'])) {
-                    if (is_array($params['keyValues'])) {
-                        $this->keyValues = $params['keyValues'];
-                    } elseif (is_object($params['keyValues'])) {
-                        $this->keyValues = get_object_vars($params['keyValues']);
-                    } else {
-                        $keyValues = trim($params['keyValues']);
-                        if ($keyValues) {
-                            $keyValues = $this->parseKeyValues($keyValues);
-                            $this->keyValues = $keyValues;
-                        }
-                    }
-                }
+        if (isset($params['autoComplete'])) {
+            $this->autoComplete = $params['autoComplete'];
         }
-
     }
 
 
