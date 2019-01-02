@@ -48,6 +48,20 @@ trait DailyAggsReport
             $sql = $this->config['aggsKey']['sql'];
             $where = $this->buildWhere(Request::post(null, null, ''));
             if ($where) {
+                $hasWhere = false;
+                $pos = strpos(strtoupper($sql), ' WHERE ');
+                if ($pos !== false) {
+                    $pos2 = strpos($sql, ')');
+                    if ($pos === false) {
+                        $hasWhere = true;
+                    } else {
+                        if ($pos > $pos2) {
+                            $hasWhere = true;
+                        }
+                    }
+                }
+
+                $sql .= $hasWhere ? ' AND ' : ' WHERE ';
                 $sql .= $where;
             }
 
@@ -174,6 +188,20 @@ trait DailyAggsReport
         $sql = $this->config['aggsKey']['sql'];
         $where = $this->buildWhere(Request::post(null, null, ''));
         if ($where) {
+            $hasWhere = false;
+            $pos = strpos(strtoupper($sql), ' WHERE ');
+            if ($pos !== false) {
+                $pos2 = strpos($sql, ')');
+                if ($pos === false) {
+                    $hasWhere = true;
+                } else {
+                    if ($pos > $pos2) {
+                        $hasWhere = true;
+                    }
+                }
+            }
+
+            $sql .= $hasWhere ? ' AND ' : ' WHERE ';
             $sql .= $where;
         }
 
@@ -261,7 +289,7 @@ trait DailyAggsReport
         }
 
         if (count($wheres)) {
-            return ' WHERE '. implode(' AND ', $wheres);
+            return implode(' AND ', $wheres);
         }
 
         return '';
