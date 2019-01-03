@@ -84,7 +84,7 @@ trait Base
         if (file_exists($path)) {
             $content = file_get_contents($path);
             if ($ext == 'css') {
-                $pattern = '/\s*url\s*\(\'?(.+)\'?\)/';
+                $pattern = '/\s*url\s*\(\s*(?:\'|\")?([^\'\)]+)(?:\'|\")?\s*\)/';
                 if (preg_match_all($pattern, $content, $matches)) {
                     foreach ($matches[1] as $m) {
                         $replaceFrom = $m;
