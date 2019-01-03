@@ -67,7 +67,7 @@ class SearchItemInt extends Driver
 
                 case 'select':
                     $html .= '<select name="' . $this->key . '" id="' . $this->key . '" class="form-control search-item-int">';
-                    $html .= '<option value="">请选择</option>';
+                    $html .= '<option value="">不限</option>';
                     foreach ($this->keyValues as $key => $value) {
                         $html .= '<option value="' . $key . '"';
                         if ($this->defaultValue !== null && $this->defaultValue == $key) {

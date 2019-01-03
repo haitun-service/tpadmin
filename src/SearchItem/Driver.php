@@ -118,6 +118,7 @@ abstract class Driver
 
                 case 'select':
                     $html .= '<select name="' . $this->key . '" id="' . $this->key . '"  class="' . $class . '" />';
+                    $html .= '<option value="">不限</option>';
                     foreach ($this->keyValues as $key => $value) {
                         $html .= '<option value="' . $key . '"';
                         if ($this->defaultValue !== null && $this->defaultValue == $key) {
