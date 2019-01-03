@@ -18,13 +18,53 @@ trait Base
         $src = Request::get('src', '', 'null');
         $src = str_replace('../', '', $src);
 
-        $ext = strtolower(strrchr($src, '.'));
-        if ($ext == '.js') {
-            header('Content-type: text/javascript');
-        } elseif ($ext == '.css') {
-            header('Content-type: text/css');
-        } else {
-            exit;
+        $supportMime = [
+            'html' => 'text/html',
+            'htm' => 'text/html',
+            'xhtml' => 'application/xhtml+xml',
+            'xml' => 'text/xml',
+            'txt' => 'text/plain',
+            'log' => 'text/plain',
+
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'css' => 'text/css',
+
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'png' => 'image/png',
+            'bmp' => 'image/bmp',
+            'ico' => 'image/icon',
+            'svg' => 'image/svg+xml',
+
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+
+            'mp4' => 'video/avi',
+            'avi' => 'video/avi',
+            '3gp' => 'application/octet-stream',
+            'flv' => 'application/octet-stream',
+            'swf' => 'application/x-shockwave-flash',
+
+            'zip' => 'application/zip',
+            'rar' => 'application/octet-stream',
+
+            'ttf' => 'application/octet-stream',
+            'fon' => 'application/octet-stream',
+
+            'doc' => 'application/msword',
+            'xls' => 'application/vnd.ms-excel',
+            'ppt' => 'application/vnd.ms-powerpoint',
+            'mdb' => 'application/msaccess',
+            'chm' => 'application/octet-stream',
+
+            'pdf' => 'application/pdf',
+        ];
+
+        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
+        if (isset($supportMime[$ext])) {
+            header('Content-Type: ' . $supportMime[$ext]);
         }
 
         $cache_time = 86400;
