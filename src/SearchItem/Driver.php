@@ -17,6 +17,8 @@ abstract class Driver
     protected $keyValues = null; // 可选值键值对
     protected $autoComplete = null; // 自动完成
     protected $defaultValue = null; // 默认值
+    protected $table = null; // 表名、连表时的别名
+
 
     /**
      * 构造函数
@@ -56,6 +58,10 @@ abstract class Driver
 
         if (isset($params['defaultValue'])) {
             $this->defaultValue = $params['defaultValue'];
+        }
+
+        if (isset($params['table'])) {
+            $this->table = $params['table'];
         }
     }
 
@@ -193,7 +199,7 @@ abstract class Driver
     public function buildWhere($condition)
     {
         if (isset($condition[$this->key]) && $condition[$this->key]) {
-            return '`' . $this->key . '`=\'' . $condition[$this->key] . '\'';
+            return ($this->table === null ? '' : ('`' . $this->table . '`.')) . '`' . $this->key . '`=\'' . $condition[$this->key] . '\'';
         }
         return '';
     }
