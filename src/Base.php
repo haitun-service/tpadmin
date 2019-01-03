@@ -62,7 +62,9 @@ trait Base
             'pdf' => 'application/pdf',
         ];
 
-        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
+        $pathInfo = pathinfo($src);
+
+        $ext = strtolower($pathInfo['extension']);
         if (isset($supportMime[$ext])) {
             header('Content-Type: ' . $supportMime[$ext]);
         }
@@ -80,7 +82,33 @@ trait Base
 
         $path = Be::getRuntime()->getPathRoot() . '/vendor/haitun-service/tpadmin/src'.$src;
         if (file_exists($path)) {
-            echo file_get_contents($path);
+            $content = file_get_contents($path);
+            if ($ext == 'css') {
+                $pattern = '/\s*url\s*\(\'?(.+)\'?\)/';
+                if (preg_match_all($pattern, $content, $matches)) {
+                    foreach ($matches[1] as $m) {
+                        $replaceFrom = $m;
+                        $replaceTo1 = $pathInfo['dirname'];
+
+                        $replaceTo2 = $m;
+                        $post = strpos($replaceTo2, '?');
+                        if ($post !== false) {
+                            $replaceTo2 = substr($replaceTo2, 0, $post);
+                        }
+
+                        while (substr($replaceTo2, 0, 3) == '../') {
+                            $replaceTo2 = substr($replaceTo2, 3);
+                            $replaceTo1 = substr($replaceTo1, 0 , strrpos($replaceTo1, '/'));
+                        }
+                        $replaceTo = $replaceTo1 . '/' . $replaceTo2;
+                        $replaceTo = \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => $replaceTo));
+
+                        $content = str_replace($replaceFrom, $replaceTo, $content);
+                    }
+                }
+            }
+
+            echo $content;
         }
         exit;
     }
