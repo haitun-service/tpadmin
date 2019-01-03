@@ -48,21 +48,29 @@ trait DailyAggsReport
             $sql = $this->config['aggsKey']['sql'];
             $where = $this->buildWhere(Request::post(null, null, ''));
             if ($where) {
-                $hasWhere = false;
-                $pos = strpos(strtoupper($sql), ' WHERE ');
+                $pos = strpos($sql, ':where');
                 if ($pos !== false) {
-                    $pos2 = strpos($sql, ')');
-                    if ($pos === false) {
-                        $hasWhere = true;
-                    } else {
-                        if ($pos > $pos2) {
+                    $sql = str_replace(':where', ' AND '.$where, $sql);
+                } else {
+                    $sqlUpper = strtoupper($sql);
+                    $hasWhere = false;
+                    $pos = strpos($sqlUpper, ' WHERE ');
+                    if ($pos !== false) {
+                        $pos2 = strpos($sqlUpper, ')');
+                        if ($pos === false) {
                             $hasWhere = true;
+                        } else {
+                            if ($pos > $pos2) {
+                                $hasWhere = true;
+                            }
                         }
                     }
-                }
 
-                $sql .= $hasWhere ? ' AND ' : ' WHERE ';
-                $sql .= $where;
+                    $sql .= $hasWhere ? ' AND ' : ' WHERE ';
+                    $sql .= $where;
+                }
+            } else {
+                $sql = str_replace(':where', '', $sql);
             }
 
             if (isset($this->config['aggsKey']['orderBy'])) {
@@ -113,6 +121,7 @@ trait DailyAggsReport
 
                 $aggsDate = $row->aggs_date;
                 $aggsKey = $row->aggs_key;
+                $fields = get_object_vars($row);
 
                 $aggsKeyName = $aggsKey;
                 if (isset($this->config['aggsKey']['keyValues']) && is_array($this->config['aggsKey']['keyValues']) ) {
@@ -141,8 +150,9 @@ trait DailyAggsReport
                     }
 
                     $sql = $aggsValue['sql'];
-                    $sql = str_replace(':aggs_date', $aggsDate, $sql);
-                    $sql = str_replace(':aggs_key', $aggsKey, $sql);
+                    foreach ($fields as $k => $v) {
+                        $sql = str_replace(':'.$k, $v, $sql);
+                    }
 
                     $value = $db->getValue($sql);
 
@@ -226,6 +236,7 @@ trait DailyAggsReport
 
             $aggsDate = $row->aggs_date;
             $aggsKey = $row->aggs_key;
+            $fields = get_object_vars($row);
 
             $aggsKeyName = $aggsKey;
             if (isset($this->config['aggsKey']['keyValues']) && is_array($this->config['aggsKey']['keyValues']) ) {
@@ -255,8 +266,10 @@ trait DailyAggsReport
                 }
 
                 $sql = $aggsValue['sql'];
-                $sql = str_replace(':aggs_date', $aggsDate, $sql);
-                $sql = str_replace(':aggs_key', $aggsKey, $sql);
+                foreach ($fields as $k => $v) {
+                    $sql = str_replace(':'.$k, $v, $sql);
+                }
+
                 $value = $db->getValue($sql);
 
                 if ($cache && $aggsDate != $currentDate) { // 启用缓存时写入
