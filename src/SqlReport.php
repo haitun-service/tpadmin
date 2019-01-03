@@ -151,8 +151,8 @@ trait SqlReport
                     }
 
                     if (isset($field['keyValues'])) {
-                        if (isset($field['keyValues'][$key])) {
-                            $row->$key = $field['keyValues'][$key];
+                        if (isset($field['keyValues'][$row->$key])) {
+                            $row->$key = $field['keyValues'][$row->$key];
                         } else {
                             $row->$key = '-';
                         }
@@ -219,8 +219,8 @@ trait SqlReport
                 }
 
                 if (isset($field['keyValues'])) {
-                    if (isset($field['keyValues'][$key])) {
-                        $values[] = $field['keyValues'][$key];
+                    if (isset($field['keyValues'][$row->$key])) {
+                        $values[] = $field['keyValues'][$row->$key];
                     } else {
                         $values[] = '-';
                     }
