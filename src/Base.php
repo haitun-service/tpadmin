@@ -124,6 +124,7 @@ trait Base
             $path .= '/' . $dir;
         }
         Be::getService('Cache')->rmDir($path);
+        echo 'The cache is cleaned!';
     }
 
 }
