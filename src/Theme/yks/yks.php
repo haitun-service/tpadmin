@@ -29,7 +29,7 @@
 </head>
 
 <body class="gray-bg">
-<div class="wrapper wrapper-content animated fadeInRight">
+<div style="padding: 10px;">
     <!--{body}-->
 
     <!--{/body}-->
