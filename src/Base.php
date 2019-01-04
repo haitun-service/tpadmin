@@ -113,4 +113,17 @@ trait Base
         exit;
     }
 
+
+    /**
+     * 清除缓存
+     */
+    public function cleanCache() {
+        $path = Be::getRuntime()->getPathCache();
+        $dir = Request::get('dir', '');
+        if ($dir) {
+            $path .= '/' . $dir;
+        }
+        Be::getService('Cache')->rmDir($path);
+    }
+
 }
