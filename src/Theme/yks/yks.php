@@ -28,7 +28,7 @@
     <!--{/head}-->
 </head>
 
-<body class="gray-bg">
+<body>
 <div style="padding: 10px;">
     <!--{body}-->
 
