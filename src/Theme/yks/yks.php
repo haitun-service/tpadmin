@@ -19,9 +19,8 @@
     <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/skin/layer.css')); ?>" rel="stylesheet">
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/layer.min.js')); ?>"></script>
 
-    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/laydate/need/laydate.css')); ?>" rel="stylesheet">
-    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/laydate/skins/default/laydate.css')); ?>" rel="stylesheet">
-    <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/layer/laydate/laydate.js')); ?>"></script>
+    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/laydate/theme/default/laydate.css')); ?>" rel="stylesheet">
+    <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/laydate/laydate.js')); ?>"></script>
 
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/theme.js')); ?>"></script>
     <!--{head}-->
