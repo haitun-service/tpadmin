@@ -45,15 +45,22 @@ class SearchItemDateRange extends Driver
         if ($this->defaultStartDate !== null) {
             $html .= ' value="' . $this->defaultStartDate . '"';
         }
-        $html .= ' onclick="laydate.render({elem: \'#'.$this->key.'_start_date\'});" placeholder="开始日期" readonly />';
+        $html .= ' placeholder="开始日期" readonly />';
         $html .= '<span class="input-group-addon">~</span>';
 
         $html .= '<input class="form-control" type="text" id="'.$this->key.'_end_date" name="'.$this->key.'_end_date"';
         if ($this->defaultEndDate !== null) {
             $html .= ' value="' . $this->defaultEndDate . '"';
         }
-        $html .= ' onclick="llaydate.render({elem: \'#'.$this->key.'_end_date\'});" placeholder="结束日期" readonly />';
+        $html .= ' placeholder="结束日期" readonly />';
         $html .= '</div>';
+
+        $html .= '<script>';
+        $html .= '$(document).ready(function(){';
+        $html .= 'laydate.render({elem: \'#'.$this->key.'_start_date\'});';
+        $html .= 'laydate.render({elem: \'#'.$this->key.'_end_date\'});';
+        $html .= '})';
+        $html .= '</script>';
 
         return $html;
     }
