@@ -2,7 +2,7 @@
 <script>
 
     function getHeight() {
-        return $(window).height() - $("#searchForm").height() - 30;
+        return $(window).height() - $("#searchForm").height() - 20;
     }
 
     function resizeTable() {

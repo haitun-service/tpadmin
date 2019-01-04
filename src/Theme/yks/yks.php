@@ -28,7 +28,7 @@
     <!--{/head}-->
 </head>
 
-<body>
+<body style="height: 100%; overflow-x: hidden; padding: 0; margin: 0;">
 <div style="padding: 10px;">
     <!--{body}-->
 
