@@ -28,6 +28,15 @@ class Runtime
 
 
     /**
+     * 缓存配置文件
+     *
+     * @var array
+     */
+    private $cacheConfig = array(
+        'driver' => 'File'
+    );
+
+    /**
      * 主题
      *
      * @var string
@@ -166,6 +175,28 @@ class Runtime
     public function setDbConfig($dbConfig)
     {
         $this->dbConfig = $dbConfig;
+        return $this;
+    }
+
+    /**
+     * 获取缓存参数设置
+     *
+     * @return array
+     */
+    public function getCacheConfig()
+    {
+        return $this->dbConfig;
+    }
+
+    /**
+     * 设置缓存参数设置
+     *
+     * @param array $cacheConfig
+     * @return Runtime
+     */
+    public function setCacheConfig($cacheConfig)
+    {
+        $this->cacheConfig = $cacheConfig;
         return $this;
     }
 

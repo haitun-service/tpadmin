@@ -1,7 +1,2 @@
 .git
 .idea
-vendor
-cache
-data
-Controller
-index.php

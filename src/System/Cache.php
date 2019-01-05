@@ -1,238 +1,55 @@
 <?php
 namespace Haitun\Service\TpAdmin\System;
 
-
+/**
+ * 缓存类
+ *
+ * @method mixed get(string $key) static 获取 指定的缓存 值
+ * @method array multiGet(array $keys) static 获取 多个指定的缓存 值
+ * @method bool set(string $key, mixed $value, int $expire = 0) static 设置缓存
+ * @method bool multiSet(array $values, int $expire = 0) static 设置缓存
+ * @method bool has(string $key) static 指定键名的缓存是否存在
+ * @method bool delete(string $key) static 删除指定键名的缓存
+ * @method int increment(string $key, int $step = 1) static 自增缓存（针对数值缓存）
+ * @method int decrement(string $key, int $step = 1) static 自减缓存（针对数值缓存）
+ * @method bool flush() static 清除缓存
+ *
+ */
 class Cache
 {
 
     /**
-     * 获取 指定的缓存 值
-     *
-     * @param string $key 键名
-     * @return mixed|false
+     * 缓存实例
      */
-    public static function get($key)
+    private static $handler = null;
+
+
+    /**
+     * 初始化
+     */
+    private static function init()
     {
-        $hash = sha1($key);
-        $path = Be::getRuntime()->getPathCache() . '/File/' .  substr($hash, 0, 2) . '/' . substr($hash, 2, 2) . '/' . $hash . '.php';
+        if (self::$handler === null) {
+            $config = Be::getRuntime()->getCacheConfig();
+            $driver = $config['driver'];
 
-        if (!is_file($path)) return false;
-
-        $content = file_get_contents($path);
-
-        if (false !== $content) {
-            $expire = substr($content, 8, 10);
-            if (time() > intval($expire)) {
-                unlink($path);
-                return false;
-            }
-
-            $value = substr($content, 18);
-            if (!is_numeric($value)) $value = unserialize($value);
-            return $value;
-        } else {
-            return false;
+            $className = 'Haitun\\Service\\TpAdmin\\System\\Cache\\Driver\\' . $driver . 'Impl';
+            self::$handler = new $className($config);
         }
     }
 
+
     /**
-     * 获取 多个指定的缓存 值
+     * 封装 获取资源方法
      *
-     * @param array $keys 键名 数组
-     * @return array()
+     * @param string $fn 方法名
+     * @param array() $args 传入的参数
+     * @return mixed
      */
-    public static function getMulti($keys)
+    public static function __callStatic($fn, $args)
     {
-        $values = array();
-        foreach ($keys as $key) {
-            $values[] = self::get($key);
-        }
-        return $values;
-    }
-
-    /**
-     * 设置缓存
-     *
-     * @param string $key 键名
-     * @param mixed $value 值
-     * @param int $expire 有效时间（秒）
-     * @return bool
-     */
-    public static function set($key, $value, $expire = 0)
-    {
-        $hash = sha1($key);
-        $dir = Be::getRuntime()->getPathCache() . '/File/' .  substr($hash, 0, 2) . '/' . substr($hash, 2, 2);
-        if (!is_dir($dir)) mkdir($dir, 0777, 1);
-        $path = $dir . '/' . $hash . '.php';
-
-        if (!is_numeric($value)) $value = serialize($value);
-
-        if ($expire == 0) {
-            $expire = 9999999999;
-        } else {
-            $expire = time() + $expire;
-            if ($expire > 9999999999) $expire = 9999999999;
-        }
-        $data = "<?php\n//" . $expire . $value;
-        return file_put_contents($path, $data);
-    }
-
-    /**
-     * 设置缓存
-     *
-     * @param array $values 键值对
-     * @param int $expire 有效时间（秒）
-     * @return bool
-     */
-    public static function setMulti($values, $expire = 0)
-    {
-        foreach ($values as $key => $value) {
-            self::set($key, $value, $expire);
-        }
-        return true;
-    }
-
-    /**
-     * 指定键名的缓存是否存在
-     *
-     * @param string $key 缓存键名
-     * @return bool
-     */
-    public static function has($key)
-    {
-        $hash = sha1($key);
-        $path = Be::getRuntime()->getPathCache() . '/File/' .  substr($hash, 0, 2) . '/' . substr($hash, 2, 2) . '/' . $hash . '.php';
-
-        return is_file($path) ? true : false;
-    }
-
-    /**
-     * 删除指定键名的缓存
-     *
-     * @param string $key 缓存键名
-     * @return bool
-     */
-    public static function delete($key)
-    {
-        $hash = sha1($key);
-        $path = Be::getRuntime()->getPathCache() . '/File/' .  substr($hash, 0, 2) . '/' . substr($hash, 2, 2) . '/' . $hash . '.php';
-        if (!is_file($path)) return true;
-        return unlink($path);
-    }
-
-    /**
-     * 自增缓存（针对数值缓存）
-     *
-     * @param string $key 缓存变量名
-     * @param int $step 步长
-     * @return false|int
-     */
-    public static function increment($key, $step = 1)
-    {
-        $hash = sha1($key);
-        $dir = Be::getRuntime()->getPathCache() . '/File/' .  substr($hash, 0, 2) . '/' . substr($hash, 2, 2);
-        if (!is_dir($dir)) mkdir($dir, 0777, 1);
-        $path = $dir . '/' . $hash . '.php';
-
-        if (!is_file($path)) {
-            $value = $step;
-            $data = "<?php\n//9999999999" . $value;
-            if (!file_put_contents($path, $data)) return false;
-            return $value;
-        }
-
-        $content = file_get_contents($path);
-
-        if (false !== $content) {
-            $expire = substr($content, 8, 10);
-            if (time() > intval($expire)) return false;
-
-            $content = substr($content, 18);
-            $value = intval($content) + $step;
-            $data = "<?php\n//" . $expire . $value;
-            if (!file_put_contents($path, $data)) return false;
-            return $value;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * 自减缓存（针对数值缓存）
-     *
-     * @param string $key 缓存变量名
-     * @param int $step 步长
-     * @return false|int
-     */
-    public static function decrement($key, $step = 1)
-    {
-        $hash = sha1($key);
-        $dir = Be::getRuntime()->getPathCache() . '/File/' .  substr($hash, 0, 2) . '/' . substr($hash, 2, 2);
-        if (!is_dir($dir)) mkdir($dir, 0777, 1);
-        $path = $dir . '/' . $hash . '.php';
-
-        if (!is_file($path)) {
-            $value = -$step;
-            $data = "<?php\n//9999999999" . $value;
-            if (!file_put_contents($path, $data)) return false;
-            return $value;
-        }
-
-        $content = file_get_contents($path);
-
-        if (false !== $content) {
-            $expire = substr($content, 8, 10);
-            if (time() > intval($expire)) return false;
-
-            $content = substr($content, 18);
-            $value = intval($content) - $step;
-            $data = "<?php\n//" . $expire . $value;
-            if (!file_put_contents($path, $data)) return false;
-            return $value;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * 清除缓存
-     *
-     * @return bool
-     */
-    public static function flush()
-    {
-        $path = Be::getRuntime()->getPathCache() . '/File';
-
-        $handle = opendir($path);
-        while (($file = readdir($handle)) !== false) {
-            if ($file != '.' && $file != '..') {
-                self::rm($path . '/' . $file);
-            }
-        }
-        closedir($handle);
-
-        return true;
-    }
-
-    /**
-     * 递归删除文件及文件夹
-     * @param string $path 文件路径
-     */
-    private static function rm($path)
-    {
-        if (is_dir($path)) {
-            $handle = opendir($path);
-            while (($file = readdir($handle)) !== false) {
-                if ($file != '.' && $file != '..') {
-                    self::rm($path . '/' . $file);
-                }
-            }
-            closedir($handle);
-
-            rmdir($path);
-        } else {
-            unlink($path);
-        }
+        self::init();
+        return call_user_func_array(array(self::$handler, $fn), $args);
     }
 
 }
