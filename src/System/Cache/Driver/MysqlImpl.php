@@ -10,7 +10,7 @@ use Haitun\Service\TpAdmin\System\Be;
  * Redis 缓存类
  *
     CREATE TABLE `cache` (
-    `name` char(32) CHARACTER SET utf8 NOT NULL COMMENT '键名',
+    `name` char(40) CHARACTER SET utf8 NOT NULL COMMENT '键名',
     `value` text CHARACTER SET utf8 NOT NULL COMMENT '值',
     `expire` int(11) NOT NULL COMMENT '超时时间'
     ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -45,6 +45,8 @@ class MysqlImpl implements Driver
      */
     public function get($key)
     {
+        $key = sha1($key);
+
         if (rand(1, 99999) == 1 && (date('G') < 7 || date('G') > 22)) {
             Be::getDb()->execute('DELETE FROM `' . $this->table . '` WHERE `expire` < ' . time());
         }
@@ -63,6 +65,10 @@ class MysqlImpl implements Driver
      */
     public function getMulti($keys)
     {
+        foreach ($keys as &$key) {
+            $key = sha1($key);
+        }
+
         $return = array();
 
         $keyValues = Be::getDb()->getValues('SELECT `name`, `value` FROM `' . $this->table . '` WHERE `name` IN (\'' . implode('\',\'', $keys) . '\') AND `expire` > ' . time());
@@ -74,7 +80,7 @@ class MysqlImpl implements Driver
                 $value = $keyValues[$key];
             }
 
-            $return[$key] = $value;
+            $return[] = $value;
         }
 
         return $return;
@@ -90,6 +96,8 @@ class MysqlImpl implements Driver
      */
     public function set($key, $value, $expire = 86400000)
     {
+        $key = sha1($key);
+
         if (!is_numeric($value)) $value = serialize($value);
         $expire = time() + $expire;
 
@@ -110,6 +118,9 @@ class MysqlImpl implements Driver
     {
         $expire = time() + $expire;
         foreach ($keyValues as $key => $value) {
+
+            $key = sha1($key);
+
             if (!is_numeric($value)) {
                 $value = serialize($value);
             }
@@ -129,6 +140,7 @@ class MysqlImpl implements Driver
      */
     public function has($key)
     {
+        $key = sha1($key);
         return Be::getDb()->getValue('SELECT COUNT(*) FROM `' . $this->table . '` WHERE `name`=\'' . $key . '\' AND `expire` > ' . time()) > 0;
     }
 
@@ -140,6 +152,7 @@ class MysqlImpl implements Driver
      */
     public function delete($key)
     {
+        $key = sha1($key);
         Be::getDb()->execute('DELETE FROM `' . $this->table . '` WHERE `name`=\'' . $key . '\'');
         return true;
     }
@@ -153,6 +166,7 @@ class MysqlImpl implements Driver
      */
     public function increment($key, $step = 1)
     {
+        $key = sha1($key);
         $obj = Be::getDb()->getObject('SELECT * FROM `' . $this->table . '` WHERE `name`=\'' . $key . '\'');
 
         $value = null;
@@ -193,6 +207,7 @@ class MysqlImpl implements Driver
      */
     public function decrement($key, $step = 1)
     {
+        $key = sha1($key);
         $obj = Be::getDb()->getObject('SELECT * FROM `' . $this->table . '` WHERE `name`=\'' . $key . '\'');
 
         $value = null;
