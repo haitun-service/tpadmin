@@ -185,7 +185,7 @@ class Runtime
      */
     public function getCacheConfig()
     {
-        return $this->dbConfig;
+        return $this->cacheConfig;
     }
 
     /**
