@@ -226,7 +226,7 @@ abstract class Driver
     public function buildWhere($condition)
     {
         if (isset($condition[$this->key]) && $condition[$this->key]) {
-            return ($this->table === null ? '' : ('`' . $this->table . '`.')) . '`' . $this->key . '`=\'' . $condition[$this->key] . '\'';
+            return ($this->table === null ? '' : ('`' . $this->table . '`.')) . '`' . $this->key . '`=\'' . trim($condition[$this->key]) . '\'';
         }
         return '';
     }

@@ -81,13 +81,13 @@ class SearchItemDateRange extends Driver
 
         $startDate = null;
         if (isset($condition[$this->key . '_start_date']) && $condition[$this->key . '_start_date']) {
-            $startDate = $condition[$this->key . '_start_date'];
+            $startDate = trim($condition[$this->key . '_start_date']);
             $where = ' ' . ($this->table === null ? '' : ('`' . $this->table . '`.')) . '`' . $this->key . '`>=\'' . $startDate . ' 00:00:00\'';
         }
 
         $endDate = null;
         if (isset($condition[$this->key . '_end_date']) && $condition[$this->key . '_end_date']) {
-            $endDate = $condition[$this->key . '_end_date'];
+            $endDate = trim($condition[$this->key . '_end_date']);
             if ($where) $where .= ' AND';
             $where .= ' ' . ($this->table === null ? '' : ('`' . $this->table . '`.')) . '`' . $this->key . '`<=\'' . $endDate . ' 23:59:59\'';
         }
