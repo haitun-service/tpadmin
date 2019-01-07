@@ -57,6 +57,8 @@ class SearchItemInt extends Driver
                         if ($this->defaultValue !== null && $this->defaultValue == $key) {
                             $html .= ' checked';
                         }
+                        if ($this->readonly) $html .= ' readonly';
+                        if ($this->disabled) $html .= ' disabled';
                         $html .= ' />';
                         $html .= '<label for="' . $this->key . '-' . $i . '">';
                         $html .= $value;
@@ -66,7 +68,10 @@ class SearchItemInt extends Driver
                     break;
 
                 case 'select':
-                    $html .= '<select name="' . $this->key . '" id="' . $this->key . '" class="form-control search-item-int">';
+                    $html .= '<select name="' . $this->key . '" id="' . $this->key . '" class="form-control search-item-int"';
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
+                    $html .= '>';
                     $html .= '<option value="">不限</option>';
                     foreach ($this->keyValues as $key => $value) {
                         $html .= '<option value="' . $key . '"';
@@ -132,6 +137,8 @@ class SearchItemInt extends Driver
             if ($this->defaultValue !== null) {
                 $html .= ' value="' . $this->defaultValue . '"';
             }
+            if ($this->readonly) $html .= ' readonly';
+            if ($this->disabled) $html .= ' disabled';
             $html .= ' />';
         }
 

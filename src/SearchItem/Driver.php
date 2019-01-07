@@ -18,6 +18,8 @@ abstract class Driver
     protected $autoComplete = null; // 自动完成
     protected $defaultValue = null; // 默认值
     protected $table = null; // 表名、连表时的别名
+    protected $readonly = false;
+    protected $disabled = false;
 
 
     /**
@@ -63,6 +65,14 @@ abstract class Driver
         if (isset($params['table'])) {
             $this->table = $params['table'];
         }
+
+        if (isset($params['readonly'])) {
+            $this->readonly = $params['readonly'];
+        }
+
+        if (isset($params['disabled'])) {
+            $this->disabled = $params['disabled'];
+        }
     }
 
 
@@ -93,6 +103,8 @@ abstract class Driver
                         if ($this->defaultValue !== null && $this->defaultValue == $key) {
                             $html .= ' checked';
                         }
+                        if ($this->readonly) $html .= ' readonly';
+                        if ($this->disabled) $html .= ' disabled';
                         $html .= ' />';
                         $html .= '<label for="' . $this->key . '-' . $i . '">';
                         $html .= $value;
@@ -108,6 +120,8 @@ abstract class Driver
                         if ($this->defaultValue !== null && $this->defaultValue == $key) {
                             $html .= ' checked';
                         }
+                        if ($this->readonly) $html .= ' readonly';
+                        if ($this->disabled) $html .= ' disabled';
                         $html .= ' />';
                         $html .= '<label for="' . $this->key . '-' . $i . '">';
                         $html .= $value;
@@ -117,7 +131,10 @@ abstract class Driver
                     break;
 
                 case 'select':
-                    $html .= '<select name="' . $this->key . '" id="' . $this->key . '"  class="' . $class . '" />';
+                    $html .= '<select name="' . $this->key . '" id="' . $this->key . '"  class="' . $class . '"';
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
+                    $html .= '>';
                     $html .= '<option value="">不限</option>';
                     foreach ($this->keyValues as $key => $value) {
                         $html .= '<option value="' . $key . '"';
@@ -133,6 +150,8 @@ abstract class Driver
                     if ($this->defaultValue !== null) {
                         $html .= ' value="' . $this->defaultValue . '"';
                     }
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
                     $html .= ' />';
 
             }
@@ -148,10 +167,15 @@ abstract class Driver
                     if ($this->defaultValue !== null) {
                         $html .= ' value="' . $this->defaultValue . '"';
                     }
-                    $html .= ' />';
+                if ($this->readonly) $html .= ' readonly';
+                if ($this->disabled) $html .= ' disabled';
+                $html .= ' />';
                     break;
                 case 'textarea':
-                    $html .= '<textarea name="' . $this->key . '" id="' . $this->key . '" class="' . $class . '" >';
+                    $html .= '<textarea name="' . $this->key . '" id="' . $this->key . '" class="' . $class . '"';
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
+                    $html .= '>';
                     if ($this->defaultValue !== null) {
                         $html .= $this->defaultValue;
                     }
@@ -162,6 +186,8 @@ abstract class Driver
                     if ($this->defaultValue !== null) {
                         $html .= ' value="' . $this->defaultValue . '"';
                     }
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
                     $html .= ' />';
             }
         }

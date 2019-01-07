@@ -42,6 +42,8 @@ class SearchItemBool extends Driver
                         if ($this->defaultValue !== null && $this->defaultValue == $key) {
                             $html .= ' checked';
                         }
+                        if ($this->readonly) $html .= ' readonly';
+                        if ($this->disabled) $html .= ' disabled';
                         $html .= ' />';
                         $html .= '<label for="' . $this->key . '-' . $i . '">';
                         $html .= $value;
@@ -51,7 +53,10 @@ class SearchItemBool extends Driver
                     break;
 
                 case 'select':
-                    $html .= '<select name="' . $this->key . '" id="' . $this->key . '" class="form-control search-item-bool">';
+                    $html .= '<select name="' . $this->key . '" id="' . $this->key . '" class="form-control search-item-bool"';
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
+                    $html .= '>';
                     foreach ($this->keyValues as $key => $value) {
                         $html .= '<option value="' . $key . '"';
                         if ($this->defaultValue !== null && $this->defaultValue == $key) {
@@ -73,11 +78,16 @@ class SearchItemBool extends Driver
                     if ($this->defaultValue !== null && $this->defaultValue) {
                         $html .= ' checked';
                     }
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
                     $html .= ' /> 是';
                     break;
 
                 case 'select':
-                    $html .= '<select name="' . $this->key . '" id="' . $this->key . '"  class="form-control search-item-bool">';
+                    $html .= '<select name="' . $this->key . '" id="' . $this->key . '"  class="form-control search-item-bool"';
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
+                    $html .= '>';
                     $html .= '<option value="1"';
                     if ($this->defaultValue !== null && $this->defaultValue) {
                         $html .= ' selected';
@@ -97,6 +107,8 @@ class SearchItemBool extends Driver
                     if ($this->defaultValue !== null && $this->defaultValue) {
                         $html .= ' checked';
                     }
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
                     $html .= ' />';
                     $html .= '<label for="' . $this->key . '-0">是</label>';
 
@@ -104,6 +116,8 @@ class SearchItemBool extends Driver
                     if ($this->defaultValue !== null && !$this->defaultValue) {
                         $html .= ' checked';
                     }
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
                     $html .= ' />';
                     $html .= '<label for="' . $this->key . '-1">否</label>';
 

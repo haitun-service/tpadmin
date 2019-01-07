@@ -59,6 +59,8 @@ class SearchItemFloat extends Driver
                         if ($this->defaultValue !== null && $this->defaultValue == $key) {
                             $html .= ' checked';
                         }
+                        if ($this->readonly) $html .= ' readonly';
+                        if ($this->disabled) $html .= ' disabled';
                         $html .= ' />';
                         $html .= '<label for="' . $this->key . '-' . $i . '">';
                         $html .= $value;
@@ -69,6 +71,9 @@ class SearchItemFloat extends Driver
 
                 case 'select':
                     $html .= '<select name="' . $this->key . '" id="' . $this->key . '"  class="form-control search-item-float">';
+                    if ($this->readonly) $html .= ' readonly';
+                    if ($this->disabled) $html .= ' disabled';
+                    $html .= '>';
                     $html .= '<option value="">不限</option>';
                     foreach ($this->keyValues as $key => $value) {
                         $html .= '<option value="' . $key . '"';
@@ -138,6 +143,8 @@ class SearchItemFloat extends Driver
             if ($this->defaultValue !== null) {
                 $html .= ' value="' . $this->defaultValue . '"';
             }
+            if ($this->readonly) $html .= ' readonly';
+            if ($this->disabled) $html .= ' disabled';
             $html .= ' />';
         }
 

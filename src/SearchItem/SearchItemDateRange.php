@@ -50,14 +50,18 @@ class SearchItemDateRange extends Driver
         if ($this->defaultStartDate !== null) {
             $html .= ' value="' . $this->defaultStartDate . '"';
         }
-        $html .= ' placeholder="开始日期" readonly />';
+        $html .= ' placeholder="开始日期"';
+        if ($this->disabled) $html .= ' disabled';
+        $html .= ' />';
         $html .= '<span class="input-group-addon">~</span>';
 
         $html .= '<input class="form-control" type="text" id="' . $this->key . '_end_date" name="' . $this->key . '_end_date"';
         if ($this->defaultEndDate !== null) {
             $html .= ' value="' . $this->defaultEndDate . '"';
         }
-        $html .= ' placeholder="结束日期" readonly />';
+        $html .= ' placeholder="结束日期"';
+        if ($this->disabled) $html .= ' disabled';
+        $html .= ' />';
         $html .= '</div>';
 
         $html .= '<script>';
