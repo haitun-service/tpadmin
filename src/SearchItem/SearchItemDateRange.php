@@ -46,11 +46,11 @@ class SearchItemDateRange extends Driver
     {
         $html = '<div class="input-group">';
         $html .= '<label class="input-group-addon bold">' . $this->name . '</label>';
-        $html .= '<input class="form-control" type="text" id="' . $this->key . '_start_date" name="' . $this->key . '_start_date"';
+        $html .= '<input class="form-control" type="text" id="' . $this->key . '_start_date" name="' . $this->key . '_start_date" ';
         if ($this->defaultStartDate !== null) {
             $html .= ' value="' . $this->defaultStartDate . '"';
         }
-        $html .= ' placeholder="开始日期"';
+        $html .= ' placeholder="开始日期" readonly';
         if ($this->disabled) $html .= ' disabled';
         $html .= ' />';
         $html .= '<span class="input-group-addon">~</span>';
@@ -59,7 +59,7 @@ class SearchItemDateRange extends Driver
         if ($this->defaultEndDate !== null) {
             $html .= ' value="' . $this->defaultEndDate . '"';
         }
-        $html .= ' placeholder="结束日期"';
+        $html .= ' placeholder="结束日期" readonly';
         if ($this->disabled) $html .= ' disabled';
         $html .= ' />';
         $html .= '</div>';
