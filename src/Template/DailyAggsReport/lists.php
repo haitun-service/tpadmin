@@ -2,7 +2,7 @@
 <script>
 
     function getHeight() {
-        return $(window).height() - $("#searchForm").height() - 20;
+        return $(window).height() - $("#searchForm").height();
     }
 
     function resizeTable() {
@@ -98,9 +98,12 @@
                 </div>
             </div>
             <hr/>
-            <button type="button" class="btn btn-primary" id="btn_search">查询</button>
-            <button type="reset" class="btn btn-warning">重置</button>
-            <button type="button" class="btn btn-info" onclick="exportData();">导出</button>
+
+            <div id="toolbar">
+                <button type="button" class="btn btn-primary" id="btn_search">查询</button>
+                <button type="reset" class="btn btn-warning">重置</button>
+                <button type="button" class="btn btn-info" onclick="exportData();">导出</button>
+            </div>
         </form>
 
         <table class="table table-striped table-bordered table-hover" id="table"
