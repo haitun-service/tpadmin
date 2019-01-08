@@ -2,7 +2,7 @@
 <script>
 
     function getHeight() {
-        return $(window).height() - $("#searchForm").height() - 30;
+        return $(window).height() - $("#searchForm").height() - 35;
     }
 
     function resizeTable() {
@@ -118,7 +118,6 @@
        }
        ?>
        data-show-refresh="true"
-       data-show-toggle="true"
        data-show-columns="true"
        data-cookie="true"
        data-cookie-id-table=""
