@@ -8,6 +8,8 @@
 
     <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/bootstrap.min.css')); ?>" rel="stylesheet">
     <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/font-awesome.css')); ?>" rel="stylesheet">
+    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/animate.css')); ?>" rel="stylesheet">
+    <link href="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/css/style.css')); ?>" rel="stylesheet">
 
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/jquery.min.js')); ?>"></script>
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/bootstrap.min.js')); ?>"></script>
@@ -28,7 +30,7 @@
 </head>
 
 <body style="height: 100%; overflow-x: hidden; padding: 0; margin: 0;">
-<div style="padding: 10px;">
+<div style="padding: 10px 10px 0 10px;">
     <!--{body}-->
 
     <!--{/body}-->
