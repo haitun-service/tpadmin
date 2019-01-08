@@ -70,7 +70,7 @@
 <!--{body}-->
 <div class="ibox float-e-margins">
     <div class="ibox-content">
-        <form id="searchForm" class="search-form">
+        <form id="searchForm" class="search-form" style="border-bottom: #eee 1px solid; padding-bottom: 10px;">
             <div class="row" style="margin-bottom: 5px;">
                 <div class="clearfix">
                     <?php
@@ -98,7 +98,7 @@
                 </div>
             </div>
 
-            <div id="toolbar" style="border-top: #eee 1px solid; margin-top: 10px;">
+            <div id="toolbar">
                 <button type="button" class="btn btn-primary" id="btn_search">查询</button>
                 <button type="reset" class="btn btn-warning">重置</button>
                 <button type="button" class="btn btn-info" onclick="exportData();">导出</button>
