@@ -25,6 +25,11 @@
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/plugins/laydate/laydate.js')); ?>"></script>
 
     <script src="<?php echo \Haitun\Service\TpAdmin\Util\Url::encode('assets', array('src' => '/Theme/yks/js/theme.js')); ?>"></script>
+
+    <style>
+        .fixed-table-pagination .pagination-detail, .fixed-table-pagination div.pagination {margin-bottom: 0;}
+    </style>
+
     <!--{head}-->
     <!--{/head}-->
 </head>

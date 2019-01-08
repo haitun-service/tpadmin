@@ -68,82 +68,78 @@
 
 
 <!--{body}-->
-<div class="ibox float-e-margins">
-    <div class="ibox-content">
-        <form id="searchForm" class="search-form" style="border-bottom: #eee 1px solid; padding-bottom: 10px;">
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="clearfix">
-                    <?php
-                    $colCount = 0;
-                    foreach($this->config['search'] as $key => $search) {
-                        $cols = 3;
-                        if (isset($search['cols'])) {
-                            $cols = $search['cols'];
-                        }
-
-                        $colCount += $cols;
-                        if ($colCount > 12) {
-                            $colCount = $cols;
-                            echo '</div></div><div class="row" style="margin-bottom: 5px;"><div class="clearfix">';
-                        }
-
-                        $driver = $search['driver'];
-                        $searchDriver = new $driver($key, $search);
-
-                        echo '<div class="col-md-'.$cols.'">';
-                        echo $searchDriver->getHtml();
-                        echo '</div>';
-                    }
-                    ?>
-                </div>
-            </div>
-
-            <div id="toolbar">
-                <button type="button" class="btn btn-primary" id="btn_search">查询</button>
-                <button type="reset" class="btn btn-warning">重置</button>
-                <button type="button" class="btn btn-info" onclick="exportData();">导出</button>
-            </div>
-
-        </form>
-
-        <table class="table table-striped table-bordered table-hover" id="table"
-               data-ajax="loadData"
-               data-toolbar="#toolbar"
-               <?php
-               if (isset($this->config['sql']['orderBy'])) {
-                   $orderBy = $this->config['sql']['orderBy'];
-                   $orderByDir = isset($this->config['sql']['orderByDir']) ? $this->config['sql']['orderByDir'] : 'DESC';
-                   ?>
-                   data-sort-name="<?php echo $orderBy; ?>"
-                   data-sort-order="<?php echo $orderByDir; ?>"
-                    <?php
-               }
-               ?>
-               data-show-refresh="true"
-               data-show-toggle="true"
-               data-show-columns="true"
-               data-cookie="true"
-               data-cookie-id-table=""
-               data-side-pagination="server"
-               data-stickyHeader="true"
-               data-stickyHeaderOffsetY="0"
-               data-pagination="true"
-               data-cache="false"
-               data-page-size="10"
-               data-page-list="[10,25,50,100]"
-        >
-            <thead>
-            <tr>
-                <?php
-                foreach ($this->config['fields'] as $key => $field) {
-                    ?>
-                    <th data-align="center" data-field="<?php echo $key; ?>"><?php echo $field['name']; ?></th>
-                    <?php
+<form id="searchForm" class="search-form" style="border-bottom: #eee 1px solid; padding-bottom: 10px;">
+    <div class="row" style="margin-bottom: 5px;">
+        <div class="clearfix">
+            <?php
+            $colCount = 0;
+            foreach($this->config['search'] as $key => $search) {
+                $cols = 3;
+                if (isset($search['cols'])) {
+                    $cols = $search['cols'];
                 }
-                ?>
-            </tr>
-            </thead>
-        </table>
+
+                $colCount += $cols;
+                if ($colCount > 12) {
+                    $colCount = $cols;
+                    echo '</div></div><div class="row" style="margin-bottom: 5px;"><div class="clearfix">';
+                }
+
+                $driver = $search['driver'];
+                $searchDriver = new $driver($key, $search);
+
+                echo '<div class="col-md-'.$cols.'">';
+                echo $searchDriver->getHtml();
+                echo '</div>';
+            }
+            ?>
+        </div>
     </div>
-</div>
+
+    <div id="toolbar">
+        <button type="button" class="btn btn-primary" id="btn_search">查询</button>
+        <button type="reset" class="btn btn-warning">重置</button>
+        <button type="button" class="btn btn-info" onclick="exportData();">导出</button>
+    </div>
+
+</form>
+
+<table class="table table-striped table-bordered table-hover" id="table"
+       data-ajax="loadData"
+       data-toolbar="#toolbar"
+       <?php
+       if (isset($this->config['sql']['orderBy'])) {
+           $orderBy = $this->config['sql']['orderBy'];
+           $orderByDir = isset($this->config['sql']['orderByDir']) ? $this->config['sql']['orderByDir'] : 'DESC';
+           ?>
+           data-sort-name="<?php echo $orderBy; ?>"
+           data-sort-order="<?php echo $orderByDir; ?>"
+            <?php
+       }
+       ?>
+       data-show-refresh="true"
+       data-show-toggle="true"
+       data-show-columns="true"
+       data-cookie="true"
+       data-cookie-id-table=""
+       data-side-pagination="server"
+       data-stickyHeader="true"
+       data-stickyHeaderOffsetY="0"
+       data-pagination="true"
+       data-cache="false"
+       data-page-size="10"
+       data-page-list="[10,25,50,100]"
+>
+    <thead>
+    <tr>
+        <?php
+        foreach ($this->config['fields'] as $key => $field) {
+            ?>
+            <th data-align="center" data-field="<?php echo $key; ?>"><?php echo $field['name']; ?></th>
+            <?php
+        }
+        ?>
+    </tr>
+    </thead>
+</table>
 <!--{/body}-->
