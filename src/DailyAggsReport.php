@@ -82,17 +82,35 @@ trait DailyAggsReport
                 $cache = $this->config['cache'];
             }
 
-            $db = Be::getDb();
-            $total = null;
-            $tmpSql = 'SELECT COUNT(*) FROM (' . $sql . ') t';
+            $pagination = true;
+            if (isset($this->config['pagination'])) {
+                $pagination = $this->config['pagination'];
+            }
 
-            if ($cache) {
-                $cacheKey = 'DailyAggsReport:' . $tmpSql;
-                $cacheValue = Cache::get($cacheKey);
-                if ($cacheValue) {
-                    $total = $cacheValue;
+            $db = Be::getDb();
+
+            $total = 0;
+            if ($pagination) {
+                $tmpSql = 'SELECT COUNT(*) FROM (' . $sql . ') t';
+
+                if ($cache) {
+                    $cacheKey = 'DailyAggsReport:' . $tmpSql;
+                    $cacheValue = Cache::get($cacheKey);
+                    if ($cacheValue) {
+                        $total = $cacheValue;
+                    } else {
+                        $pos = strpos($tmpSql, ':partition');
+                        if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                            foreach ($this->config['partitions'] as $partition) {
+                                $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql)));
+                            }
+                        } else {
+                            $total = $db->getValue(str_replace(':partition', '', $tmpSql));
+                        }
+
+                        Cache::set($cacheKey, $total, 600);
+                    }
                 } else {
-                    $total = 0;
                     $pos = strpos($tmpSql, ':partition');
                     if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                         foreach ($this->config['partitions'] as $partition) {
@@ -101,23 +119,17 @@ trait DailyAggsReport
                     } else {
                         $total = $db->getValue(str_replace(':partition', '', $tmpSql));
                     }
-
-                    Cache::set($cacheKey, $total, 600);
-                }
-            } else {
-                $total = 0;
-                $pos = strpos($tmpSql, ':partition');
-                if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
-                    foreach ($this->config['partitions'] as $partition) {
-                        $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql)));
-                    }
-                } else {
-                    $total = $db->getValue(str_replace(':partition', '', $tmpSql));
                 }
             }
 
+
             $rows = null;
-            $tmpSql = $sql . ' LIMIT ' . $offset . ', ' . $limit;
+            $tmpSql = null;
+            if ($pagination) {
+                $tmpSql = $sql . ' LIMIT ' . $offset . ', ' . $limit;
+            } else {
+                $tmpSql = $sql;
+            }
             if ($cache) {
                 $cacheKey = 'DailyAggsReport:' . $tmpSql;
                 $cacheValue = Cache::get($cacheKey);
@@ -161,6 +173,10 @@ trait DailyAggsReport
                 } else {
                     $rows = $db->getObjects(str_replace(':partition', '', $tmpSql));
                 }
+            }
+
+            if (!$pagination) {
+                $total = count($rows);
             }
 
             $currentDate = date('Y-m-d');

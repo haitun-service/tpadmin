@@ -162,7 +162,7 @@ trait SqlReport
             Response::set('rows', $rows);
             Response::ajax();
         }
-        
+
         Response::set('config', $this->config);
         Response::setTitle($this->config['name']);
         Response::display('SqlReport.lists');
