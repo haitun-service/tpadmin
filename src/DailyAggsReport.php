@@ -175,10 +175,6 @@ trait DailyAggsReport
                 }
             }
 
-            if (!$pagination) {
-                $total = count($rows);
-            }
-
             $currentDate = date('Y-m-d');
             foreach ($rows as &$row) {
 
