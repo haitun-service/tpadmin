@@ -94,11 +94,28 @@ trait DailyAggsReport
                 if ($cacheValue) {
                     $total = $cacheValue;
                 } else {
-                    $total = $db->getValue($tmpSql);
+                    $total = 0;
+                    $pos = strpos($tmpSql, ':partition');
+                    if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                        foreach ($this->config['partitions'] as $partition) {
+                            $total += intval($db->getValue(str_replace(':partition', $partition, $tmpSql)));
+                        }
+                    } else {
+                        $total = $db->getValue(str_replace(':partition', '', $tmpSql));
+                    }
+
                     Cache::set($cacheKey, $total, 600);
                 }
             } else {
-                $total = $db->getValue($tmpSql);
+                $total = 0;
+                $pos = strpos($tmpSql, ':partition');
+                if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                    foreach ($this->config['partitions'] as $partition) {
+                        $total += intval($db->getValue(str_replace(':partition', $partition, $tmpSql)));
+                    }
+                } else {
+                    $total = $db->getValue(str_replace(':partition', '', $tmpSql));
+                }
             }
 
             $rows = null;
@@ -109,11 +126,43 @@ trait DailyAggsReport
                 if ($cacheValue) {
                     $rows = $cacheValue;
                 } else {
-                    $rows = $db->getObjects($tmpSql);
+
+                    $rows = array();
+                    $pos = strpos($sql, ':partition');
+                    if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                        foreach ($this->config['partitions'] as $partition) {
+                            $tmpRows = $db->getObjects(str_replace(':partition', $partition, $tmpSql));
+                            foreach ($tmpRows as $x) {
+                                if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
+                                    $rows[$x->aggs_date.':'.$x->aggs_key] = $x;
+                                }
+                            }
+                        }
+                        $rows = array_values($rows);
+
+                    } else {
+                        $rows = $db->getObjects(str_replace(':partition', '', $tmpSql));
+                    }
+
                     Cache::set($cacheKey, $rows, 600);
                 }
             } else {
-                $rows = $db->getObjects($tmpSql);
+                $rows = array();
+                $pos = strpos($sql, ':partition');
+                if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                    foreach ($this->config['partitions'] as $partition) {
+                        $tmpRows = $db->getObjects(str_replace(':partition', $partition, $tmpSql));
+                        foreach ($tmpRows as $x) {
+                            if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
+                                $rows[$x->aggs_date.':'.$x->aggs_key] = $x;
+                            }
+                        }
+                    }
+                    $rows = array_values($rows);
+
+                } else {
+                    $rows = $db->getObjects(str_replace(':partition', '', $tmpSql));
+                }
             }
 
             $currentDate = date('Y-m-d');
@@ -154,7 +203,15 @@ trait DailyAggsReport
                         $sql = str_replace(':'.$k, $v, $sql);
                     }
 
-                    $value = $db->getValue($sql);
+                    $value = 0;
+                    $pos = strpos($sql, ':partition');
+                    if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                        foreach ($this->config['partitions'] as $partition) {
+                            $value += intval($db->getValue(str_replace(':partition', $partition, $sql)));
+                        }
+                    } else {
+                        $value = $db->getValue(str_replace(':partition', '', $sql));
+                    }
 
                     if ($cache && $aggsDate != $currentDate) { // 启用缓存时写入
                         $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
@@ -229,10 +286,6 @@ trait DailyAggsReport
             $sql .= ' ORDER BY aggs_date DESC';
         }
 
-        $db = Be::getDb();
-
-        $rows = $db->getYieldObjects($sql);
-
         $currentDate = date('Y-m-d');
 
         $cache = false;
@@ -240,55 +293,142 @@ trait DailyAggsReport
             $cache = $this->config['cache'];
         }
 
-        foreach ($rows as $row) {
+        $db = Be::getDb();
 
-            $aggsDate = $row->aggs_date;
-            $aggsKey = $row->aggs_key;
-            $fields = get_object_vars($row);
+        $pos = strpos($sql, ':partition');
+        if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
 
-            $aggsKeyName = $aggsKey;
-            if (isset($this->config['aggsKey']['keyValues']) && is_array($this->config['aggsKey']['keyValues']) ) {
-                if (isset($this->config['aggsKey']['keyValues'][$aggsKey])) {
-                    $aggsKeyName = $this->config['aggsKey']['keyValues'][$aggsKey];
-                } else {
-                    $aggsKeyName = '-';
-                }
-            }
-            $row->aggs_key_name = $aggsKeyName;
+            $rows = array();
+            foreach ($this->config['partitions'] as $partition) {
+                $tmpRows = $db->getYieldObjects(str_replace(':partition', $partition, $sql));
+                foreach ($tmpRows as $x) {
+                    if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
+                        $rows[$x->aggs_date.':'.$x->aggs_key] = 1;
 
-            $values = array();
-            $values[] = $aggsDate;
-            $values[] = $aggsKeyName;
+                        $aggsDate = $x->aggs_date;
+                        $aggsKey = $x->aggs_key;
+                        $fields = get_object_vars($x);
 
-            foreach ($this->config['aggsValues'] as $aggsValue) {
+                        $aggsKeyName = $aggsKey;
+                        if (isset($this->config['aggsKey']['keyValues']) && is_array($this->config['aggsKey']['keyValues']) ) {
+                            if (isset($this->config['aggsKey']['keyValues'][$aggsKey])) {
+                                $aggsKeyName = $this->config['aggsKey']['keyValues'][$aggsKey];
+                            } else {
+                                $aggsKeyName = '-';
+                            }
+                        }
+                        $x->aggs_key_name = $aggsKeyName;
 
-                // 启用缓存，并且非今天时，取缓存数据
-                if ($cache && $aggsDate != $currentDate) {
+                        $values = array();
+                        $values[] = $aggsDate;
+                        $values[] = $aggsKeyName;
 
-                    $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
-                    $cacheValue = Cache::get($cacheKey);
-                    if ($cacheValue) {
-                        $values[] = $cacheValue;
-                        continue;
+                        foreach ($this->config['aggsValues'] as $aggsValue) {
+
+                            // 启用缓存，并且非今天时，取缓存数据
+                            if ($cache && $aggsDate != $currentDate) {
+
+                                $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
+                                $cacheValue = Cache::get($cacheKey);
+                                if ($cacheValue) {
+                                    $values[] = $cacheValue;
+                                    continue;
+                                }
+                            }
+
+                            $sql = $aggsValue['sql'];
+                            foreach ($fields as $k => $v) {
+                                $sql = str_replace(':'.$k, $v, $sql);
+                            }
+
+                            $value = 0;
+                            $pos = strpos($sql, ':partition');
+                            if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                                foreach ($this->config['partitions'] as $partition) {
+                                    $value += intval($db->getValue(str_replace(':partition', $partition, $sql)));
+                                }
+                            } else {
+                                $value = $db->getValue(str_replace(':partition', '', $sql));
+                            }
+
+                            if ($cache && $aggsDate != $currentDate) { // 启用缓存时写入
+                                $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
+                                Cache::set($cacheKey, $value);
+                            }
+
+                            $values[] = $value;
+                        }
+
+                        fputcsv($handler, $values);
+
                     }
                 }
-
-                $sql = $aggsValue['sql'];
-                foreach ($fields as $k => $v) {
-                    $sql = str_replace(':'.$k, $v, $sql);
-                }
-
-                $value = $db->getValue($sql);
-
-                if ($cache && $aggsDate != $currentDate) { // 启用缓存时写入
-                    $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
-                    Cache::set($cacheKey, $value);
-                }
-
-                $values[] = $value;
             }
 
-            fputcsv($handler, $values);
+        } else {
+            $rows = $db->getYieldObjects(str_replace(':partition', '', $sql));
+            foreach ($rows as $x) {
+                if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
+                    $rows[$x->aggs_date.':'.$x->aggs_key] = 1;
+
+                    $aggsDate = $x->aggs_date;
+                    $aggsKey = $x->aggs_key;
+                    $fields = get_object_vars($x);
+
+                    $aggsKeyName = $aggsKey;
+                    if (isset($this->config['aggsKey']['keyValues']) && is_array($this->config['aggsKey']['keyValues']) ) {
+                        if (isset($this->config['aggsKey']['keyValues'][$aggsKey])) {
+                            $aggsKeyName = $this->config['aggsKey']['keyValues'][$aggsKey];
+                        } else {
+                            $aggsKeyName = '-';
+                        }
+                    }
+                    $x->aggs_key_name = $aggsKeyName;
+
+                    $values = array();
+                    $values[] = $aggsDate;
+                    $values[] = $aggsKeyName;
+
+                    foreach ($this->config['aggsValues'] as $aggsValue) {
+
+                        // 启用缓存，并且非今天时，取缓存数据
+                        if ($cache && $aggsDate != $currentDate) {
+
+                            $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
+                            $cacheValue = Cache::get($cacheKey);
+                            if ($cacheValue) {
+                                $values[] = $cacheValue;
+                                continue;
+                            }
+                        }
+
+                        $sql = $aggsValue['sql'];
+                        foreach ($fields as $k => $v) {
+                            $sql = str_replace(':'.$k, $v, $sql);
+                        }
+
+                        $value = 0;
+                        $pos = strpos($sql, ':partition');
+                        if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                            foreach ($this->config['partitions'] as $partition) {
+                                $value += intval($db->getValue(str_replace(':partition', $partition, $sql)));
+                            }
+                        } else {
+                            $value = $db->getValue(str_replace(':partition', '', $sql));
+                        }
+
+                        if ($cache && $aggsDate != $currentDate) { // 启用缓存时写入
+                            $cacheKey = 'DailyAggsReport:' . $aggsDate . ':' . $aggsKey . ':' . $aggsValue['sql'];
+                            Cache::set($cacheKey, $value);
+                        }
+
+                        $values[] = $value;
+                    }
+
+                    fputcsv($handler, $values);
+
+                }
+            }
         }
 
         fclose($handler) or die("can't close php://output");
