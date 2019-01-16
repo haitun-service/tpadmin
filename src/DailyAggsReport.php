@@ -98,7 +98,7 @@ trait DailyAggsReport
                     $pos = strpos($tmpSql, ':partition');
                     if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                         foreach ($this->config['partitions'] as $partition) {
-                            $total += intval($db->getValue(str_replace(':partition', ' PARTITION ' . $partition, $tmpSql)));
+                            $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql)));
                         }
                     } else {
                         $total = $db->getValue(str_replace(':partition', '', $tmpSql));
@@ -111,7 +111,7 @@ trait DailyAggsReport
                 $pos = strpos($tmpSql, ':partition');
                 if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                     foreach ($this->config['partitions'] as $partition) {
-                        $total += intval($db->getValue(str_replace(':partition', ' PARTITION ' . $partition, $tmpSql)));
+                        $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql)));
                     }
                 } else {
                     $total = $db->getValue(str_replace(':partition', '', $tmpSql));
@@ -131,7 +131,7 @@ trait DailyAggsReport
                     $pos = strpos($sql, ':partition');
                     if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                         foreach ($this->config['partitions'] as $partition) {
-                            $tmpRows = $db->getObjects(str_replace(':partition', ' PARTITION ' . $partition, $tmpSql));
+                            $tmpRows = $db->getObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql));
                             foreach ($tmpRows as $x) {
                                 if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
                                     $rows[$x->aggs_date.':'.$x->aggs_key] = $x;
@@ -151,7 +151,7 @@ trait DailyAggsReport
                 $pos = strpos($sql, ':partition');
                 if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                     foreach ($this->config['partitions'] as $partition) {
-                        $tmpRows = $db->getObjects(str_replace(':partition', ' PARTITION ' . $partition, $tmpSql));
+                        $tmpRows = $db->getObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql));
                         foreach ($tmpRows as $x) {
                             if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
                                 $rows[$x->aggs_date.':'.$x->aggs_key] = $x;
@@ -207,7 +207,7 @@ trait DailyAggsReport
                     $pos = strpos($sql, ':partition');
                     if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                         foreach ($this->config['partitions'] as $partition) {
-                            $value += intval($db->getValue(str_replace(':partition', ' PARTITION ' . $partition, $sql)));
+                            $value += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
                         }
                     } else {
                         $value = $db->getValue(str_replace(':partition', '', $sql));
@@ -300,7 +300,7 @@ trait DailyAggsReport
 
             $rows = array();
             foreach ($this->config['partitions'] as $partition) {
-                $tmpRows = $db->getYieldObjects(str_replace(':partition', ' PARTITION ' . $partition, $sql));
+                $tmpRows = $db->getYieldObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $sql));
                 foreach ($tmpRows as $x) {
                     if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
                         $rows[$x->aggs_date.':'.$x->aggs_key] = 1;
@@ -345,7 +345,7 @@ trait DailyAggsReport
                             $pos = strpos($sql, ':partition');
                             if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                                 foreach ($this->config['partitions'] as $partition) {
-                                    $value += intval($db->getValue(str_replace(':partition', ' PARTITION ' . $partition, $sql)));
+                                    $value += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
                                 }
                             } else {
                                 $value = $db->getValue(str_replace(':partition', '', $sql));
@@ -411,7 +411,7 @@ trait DailyAggsReport
                         $pos = strpos($sql, ':partition');
                         if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                             foreach ($this->config['partitions'] as $partition) {
-                                $value += intval($db->getValue(str_replace(':partition', ' PARTITION ' . $partition, $sql)));
+                                $value += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
                             }
                         } else {
                             $value = $db->getValue(str_replace(':partition', '', $sql));
