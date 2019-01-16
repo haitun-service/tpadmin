@@ -27,8 +27,6 @@ trait DailyAggsReport
     public function lists()
     {
 
-        Response::set('config', $this->config);
-
         if (Request::isPost()) {
 
             $offset = Request::post('offset', 0);
@@ -227,7 +225,7 @@ trait DailyAggsReport
             Response::ajax();
         }
 
-
+        Response::set('config', $this->config);
         Response::setTitle($this->config['name']);
         Response::display('DailyAggsReport.lists');
     }

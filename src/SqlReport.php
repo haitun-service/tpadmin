@@ -25,8 +25,6 @@ trait SqlReport
      */
     public function lists()
     {
-        Response::set('config', $this->config);
-
         if (Request::isPost()) {
 
             $offset = Request::post('offset', 0);
@@ -164,7 +162,8 @@ trait SqlReport
             Response::set('rows', $rows);
             Response::ajax();
         }
-
+        
+        Response::set('config', $this->config);
         Response::setTitle($this->config['name']);
         Response::display('SqlReport.lists');
     }
