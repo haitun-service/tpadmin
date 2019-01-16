@@ -73,6 +73,15 @@ class Response
     }
 
     /**
+     * 设置暂存数据
+     * @param mixed $data 数据(可以是数组或对象)
+     */
+    public static function setData($data)
+    {
+        self::$data = $data;
+    }
+
+    /**
      * 获取暂存数据
      *
      * @param string $name 名称

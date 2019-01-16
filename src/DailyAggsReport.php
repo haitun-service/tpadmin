@@ -236,8 +236,13 @@ trait DailyAggsReport
                 }
             }
 
-            Response::set('total', $total);
-            Response::set('rows', $rows);
+            if ($pagination) {
+                Response::set('total', $total);
+                Response::set('rows', $rows);
+            } else {
+                Response::setData($rows);
+            }
+
             Response::ajax();
         }
 
