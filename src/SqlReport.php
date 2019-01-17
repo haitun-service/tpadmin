@@ -233,27 +233,58 @@ trait SqlReport
         }
 
         $db = Be::getDb();
-        $rows = $db->getYieldObjects($sql);
-        foreach ($rows as $row) {
-            $values = array();
-            foreach ($this->config['fields'] as $key => $field) {
-                if (!isset($row->$key)) {
-                    $values[] = '-';
-                    continue;
-                }
 
-                if (isset($field['keyValues'])) {
-                    if (isset($field['keyValues'][$row->$key])) {
-                        $values[] = $field['keyValues'][$row->$key];
-                    } else {
-                        $values[] = '-';
+        $pos = strpos($sql, ':partition');
+        if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+
+            foreach ($this->config['partitions'] as $partition) {
+                $rows = $db->getYieldObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $sql));
+                foreach ($rows as $row) {
+                    $values = array();
+                    foreach ($this->config['fields'] as $key => $field) {
+                        if (!isset($row->$key)) {
+                            $values[] = '-';
+                            continue;
+                        }
+
+                        if (isset($field['keyValues'])) {
+                            if (isset($field['keyValues'][$row->$key])) {
+                                $values[] = $field['keyValues'][$row->$key];
+                            } else {
+                                $values[] = '-';
+                            }
+                        } else {
+                            $values[] = $row->$key;
+                        }
                     }
-                } else {
-                    $values[] = $row->$key;
+
+                    fputcsv($handler, $values);
                 }
             }
 
-            fputcsv($handler, $values);
+        } else {
+            $rows = $db->getYieldObjects(str_replace(':partition', '', $sql));
+            foreach ($rows as $row) {
+                $values = array();
+                foreach ($this->config['fields'] as $key => $field) {
+                    if (!isset($row->$key)) {
+                        $values[] = '-';
+                        continue;
+                    }
+
+                    if (isset($field['keyValues'])) {
+                        if (isset($field['keyValues'][$row->$key])) {
+                            $values[] = $field['keyValues'][$row->$key];
+                        } else {
+                            $values[] = '-';
+                        }
+                    } else {
+                        $values[] = $row->$key;
+                    }
+                }
+
+                fputcsv($handler, $values);
+            }
         }
 
         fclose($handler) or die("can't close php://output");
