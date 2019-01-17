@@ -77,18 +77,33 @@ trait SqlReport
 
             $db = Be::getDb();
 
-            $total = null;
+            $total = 0;
             if ($cache) {
                 $cacheKey = 'SqlReport:' . $sql;
                 $cacheValue = Cache::get($cacheKey);
                 if ($cacheValue) {
                     $total = $cacheValue;
                 } else {
-                    $total = $db->getValue($sql);
+                    $pos = strpos($sql, ':partition');
+                    if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                        foreach ($this->config['partitions'] as $partition) {
+                            $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
+                        }
+                    } else {
+                        $total = $db->getValue(str_replace(':partition', '', $sql));
+                    }
+
                     Cache::set($cacheKey, $total, 600);
                 }
             } else {
-                $total = $db->getValue($sql);
+                $pos = strpos($sql, ':partition');
+                if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                    foreach ($this->config['partitions'] as $partition) {
+                        $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
+                    }
+                } else {
+                    $total = $db->getValue(str_replace(':partition', '', $sql));
+                }
             }
 
             $sql = $this->config['sql']['data'];
@@ -117,6 +132,8 @@ trait SqlReport
             } else {
                 $sql = str_replace(':where', '', $sql);
             }
+
+            $sql = str_replace(':partition', '', $sql);
 
             if (isset($this->config['sql']['orderBy'])) {
                 $orderBy = $this->config['sql']['orderBy'];
