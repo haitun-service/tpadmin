@@ -93,26 +93,20 @@ trait DailyAggsReport
             if ($pagination) {
                 $tmpSql = 'SELECT COUNT(*) FROM (' . $sql . ') t';
 
+                $cacheKey = null;
+                $total = null;
                 if ($cache) {
                     $cacheKey = 'DailyAggsReport:' . $tmpSql;
                     $cacheValue = Cache::get($cacheKey);
                     if ($cacheValue) {
                         $total = $cacheValue;
-                    } else {
-                        $pos = strpos($tmpSql, ':partition');
-                        if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
-                            foreach ($this->config['partitions'] as $partition) {
-                                $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql)));
-                            }
-                        } else {
-                            $total = $db->getValue(str_replace(':partition', '', $tmpSql));
-                        }
-
-                        Cache::set($cacheKey, $total, 600);
                     }
-                } else {
+                }
+
+                if ($total === null) {
                     $pos = strpos($tmpSql, ':partition');
                     if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                        $total = 0;
                         foreach ($this->config['partitions'] as $partition) {
                             $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql)));
                         }
@@ -120,43 +114,30 @@ trait DailyAggsReport
                         $total = $db->getValue(str_replace(':partition', '', $tmpSql));
                     }
                 }
+
+                if ($cache) {
+                    Cache::set($cacheKey, $total, 600);
+                }
             }
 
-
             $rows = null;
+            $cacheKey = null;
             $tmpSql = null;
             if ($pagination) {
                 $tmpSql = $sql . ' LIMIT ' . $offset . ', ' . $limit;
             } else {
                 $tmpSql = $sql;
             }
+
             if ($cache) {
                 $cacheKey = 'DailyAggsReport:' . $tmpSql;
                 $cacheValue = Cache::get($cacheKey);
                 if ($cacheValue) {
                     $rows = $cacheValue;
-                } else {
-
-                    $rows = array();
-                    $pos = strpos($sql, ':partition');
-                    if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
-                        foreach ($this->config['partitions'] as $partition) {
-                            $tmpRows = $db->getObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $tmpSql));
-                            foreach ($tmpRows as $x) {
-                                if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
-                                    $rows[$x->aggs_date.':'.$x->aggs_key] = $x;
-                                }
-                            }
-                        }
-                        $rows = array_values($rows);
-
-                    } else {
-                        $rows = $db->getObjects(str_replace(':partition', '', $tmpSql));
-                    }
-
-                    Cache::set($cacheKey, $rows, 600);
                 }
-            } else {
+            }
+
+            if ($rows === null) {
                 $rows = array();
                 $pos = strpos($sql, ':partition');
                 if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
@@ -173,6 +154,10 @@ trait DailyAggsReport
                 } else {
                     $rows = $db->getObjects(str_replace(':partition', '', $tmpSql));
                 }
+            }
+
+            if ($cache) {
+                Cache::set($cacheKey, $rows, 600);
             }
 
             $currentDate = date('Y-m-d');

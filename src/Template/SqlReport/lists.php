@@ -11,17 +11,37 @@
         });
     }
 
+    var g_bLoaded = false;
     $(function(){
-        $("#table").bootstrapTable({
-            height: getHeight()
-        });
+        <?php
+        $autoLoadData = true;
+        if ($this->config['autoLoadData']) {
+            $autoLoadData = $this->config['autoLoadData'];
+        }
+
+        if ($autoLoadData) {
+            ?>
+            g_bLoaded = true;
+            $("#table").bootstrapTable({
+                height: getHeight()
+            });
+            <?php
+        }
+        ?>
 
         $(window).resize(function () {
             resizeTable();
         });
 
         $('#btn_search').click(function(){  // 点击查询
-            $("#table").bootstrapTable('refresh',{query: {offset: 0}});
+            if (g_bLoaded) {
+                $("#table").bootstrapTable('refresh',{query: {offset: 0}});
+            } else {
+                g_bLoaded = true;
+                $("#table").bootstrapTable({
+                    height: getHeight()
+                });
+            }
         });
 
         $(".search-form").submit(function () {

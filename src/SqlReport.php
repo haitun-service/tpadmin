@@ -77,33 +77,30 @@ trait SqlReport
 
             $db = Be::getDb();
 
-            $total = 0;
+            $cacheKey = null;
+            $total = null;
             if ($cache) {
                 $cacheKey = 'SqlReport:' . $sql;
                 $cacheValue = Cache::get($cacheKey);
                 if ($cacheValue) {
                     $total = $cacheValue;
-                } else {
-                    $pos = strpos($sql, ':partition');
-                    if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
-                        foreach ($this->config['partitions'] as $partition) {
-                            $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
-                        }
-                    } else {
-                        $total = $db->getValue(str_replace(':partition', '', $sql));
-                    }
-
-                    Cache::set($cacheKey, $total, 600);
                 }
-            } else {
+            }
+
+            if ($total === null) {
                 $pos = strpos($sql, ':partition');
                 if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                    $total = 0;
                     foreach ($this->config['partitions'] as $partition) {
                         $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
                     }
                 } else {
                     $total = $db->getValue(str_replace(':partition', '', $sql));
                 }
+            }
+
+            if ($cache) {
+                Cache::set($cacheKey, $total, 600);
             }
 
             $sql = $this->config['sql']['data'];
