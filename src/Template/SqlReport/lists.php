@@ -15,7 +15,7 @@
     $(function(){
         <?php
         $autoLoadData = true;
-        if ($this->config['autoLoadData']) {
+        if (isset($this->config['autoLoadData'])) {
             $autoLoadData = $this->config['autoLoadData'];
         }
 
