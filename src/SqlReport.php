@@ -46,6 +46,11 @@ trait SqlReport
                 $cache = $this->config['cache'];
             }
 
+            $pagination = true;
+            if (isset($this->config['pagination'])) {
+                $pagination = $this->config['pagination'];
+            }
+
             $where = $this->buildWhere(Request::post(null, null, ''));
 
             $sql = $this->config['sql']['count'];
@@ -77,30 +82,35 @@ trait SqlReport
 
             $db = Be::getDb();
 
-            $cacheKey = null;
-            $total = null;
-            if ($cache) {
-                $cacheKey = 'SqlReport:' . $sql;
-                $cacheValue = Cache::get($cacheKey);
-                if ($cacheValue) {
-                    $total = $cacheValue;
-                }
-            }
 
-            if ($total === null) {
-                $pos = strpos($sql, ':partition');
-                if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
-                    $total = 0;
-                    foreach ($this->config['partitions'] as $partition) {
-                        $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
+            $total = 0;
+            if ($pagination) {
+
+                $cacheKey = null;
+                $total = null;
+                if ($cache) {
+                    $cacheKey = 'SqlReport:' . $sql;
+                    $cacheValue = Cache::get($cacheKey);
+                    if ($cacheValue) {
+                        $total = $cacheValue;
                     }
-                } else {
-                    $total = $db->getValue(str_replace(':partition', '', $sql));
                 }
-            }
 
-            if ($cache) {
-                Cache::set($cacheKey, $total, 600);
+                if ($total === null) {
+                    $pos = strpos($sql, ':partition');
+                    if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                        $total = 0;
+                        foreach ($this->config['partitions'] as $partition) {
+                            $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
+                        }
+                    } else {
+                        $total = $db->getValue(str_replace(':partition', '', $sql));
+                    }
+                }
+
+                if ($cache) {
+                    Cache::set($cacheKey, $total, 600);
+                }
             }
 
             $sql = $this->config['sql']['data'];
@@ -130,28 +140,41 @@ trait SqlReport
                 $sql = str_replace(':where', '', $sql);
             }
 
-            $sql = str_replace(':partition', '', $sql);
-
             if (isset($this->config['sql']['orderBy'])) {
                 $orderBy = $this->config['sql']['orderBy'];
                 $orderByDir = isset($this->config['sql']['orderByDir']) ? $this->config['sql']['orderByDir'] : 'DESC';
                 $sql .= ' ORDER BY ' . $orderBy . ' ' . $orderByDir;
             }
 
-            $sql .= ' LIMIT ' . $offset . ', ' . $limit;
+            if ($pagination) {
+                $sql .= ' LIMIT ' . $offset . ', ' . $limit;
+            }
 
+            $cacheKey = null;
             $rows = null;
             if ($cache) {
                 $cacheKey = 'SqlReport:' . $sql;
                 $cacheValue = Cache::get($cacheKey);
                 if ($cacheValue) {
                     $rows = $cacheValue;
-                } else {
-                    $rows = $db->getObjects($sql);
-                    Cache::set($cacheKey, $rows, 600);
                 }
-            } else {
-                $rows = $db->getObjects($sql);
+            }
+
+            if ($rows === null) {
+                $pos = strpos($sql, ':partition');
+                if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                    $rows = array();
+                    foreach ($this->config['partitions'] as $partition) {
+                        $tmpRows = $db->getObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $sql));
+                        $rows = array_merge($rows, $tmpRows);
+                    }
+                } else {
+                    $rows = $db->getObjects(str_replace(':partition', '', $sql));
+                }
+            }
+
+            if ($cache) {
+                Cache::set($cacheKey, $rows, 600);
             }
 
             foreach ($rows as &$row) {
@@ -172,8 +195,13 @@ trait SqlReport
                 }
             }
 
-            Response::set('total', $total);
-            Response::set('rows', $rows);
+            if ($pagination) {
+                Response::set('total', $total);
+                Response::set('rows', $rows);
+            } else {
+                Response::setData($rows);
+            }
+
             Response::ajax();
         }
 
