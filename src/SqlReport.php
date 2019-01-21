@@ -148,6 +148,10 @@ trait SqlReport
 
             if ($pagination) {
                 $sql .= ' LIMIT ' . $offset . ', ' . $limit;
+            } else {
+                if (isset($this->config['limit']) && is_numeric($this->config['limit']) && $this->config['limit'] > 0) {
+                    $sql .= ' LIMIT ' . $this->config['limit'];
+                }
             }
 
             $cacheKey = null;
