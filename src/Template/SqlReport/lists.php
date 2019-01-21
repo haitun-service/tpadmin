@@ -124,12 +124,6 @@
 
 </form>
 
-<?php
-$pagination = true;
-if (isset($this->config['pagination'])) {
-    $pagination = $this->config['pagination'];
-}
-?>
 <table class="table table-striped table-bordered table-hover" id="table"
        data-ajax="loadData"
        data-toolbar="#toolbar"
@@ -147,7 +141,7 @@ if (isset($this->config['pagination'])) {
        data-show-columns="true"
        data-cookie="true"
        data-cookie-id-table=""
-       data-side-pagination="<?php echo $pagination?'server':'client'; ?>"
+       data-side-pagination="server"
        data-stickyHeader="true"
        data-stickyHeaderOffsetY="0"
        data-pagination="true"

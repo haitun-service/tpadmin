@@ -84,6 +84,7 @@ trait SqlReport
 
 
             $total = 0;
+            $pTotals = array();
             if ($pagination) {
 
                 $cacheKey = null;
@@ -101,7 +102,10 @@ trait SqlReport
                     if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
                         $total = 0;
                         foreach ($this->config['partitions'] as $partition) {
-                            $total += intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
+                            $tmpTotal = intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
+                            if ($tmpTotal == 0) continue;
+                            $pTotals[$partition] = $tmpTotal;
+                            $total += $tmpTotal;
                         }
                     } else {
                         $total = $db->getValue(str_replace(':partition', '', $sql));
@@ -146,18 +150,10 @@ trait SqlReport
                 $sql .= ' ORDER BY ' . $orderBy . ' ' . $orderByDir;
             }
 
-            if ($pagination) {
-                $sql .= ' LIMIT ' . $offset . ', ' . $limit;
-            } else {
-                if (isset($this->config['limit']) && is_numeric($this->config['limit']) && $this->config['limit'] > 0) {
-                    $sql .= ' LIMIT ' . $this->config['limit'];
-                }
-            }
-
             $cacheKey = null;
             $rows = null;
             if ($cache) {
-                $cacheKey = 'SqlReport:' . $sql;
+                $cacheKey = 'SqlReport:' . $sql . ' LIMIT ' . $offset . ', ' . $limit;
                 $cacheValue = Cache::get($cacheKey);
                 if ($cacheValue) {
                     $rows = $cacheValue;
@@ -167,12 +163,49 @@ trait SqlReport
             if ($rows === null) {
                 $pos = strpos($sql, ':partition');
                 if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+
+                    $partitions = array();
+
+                    $countOffset = 0;
+                    $countLimit = 0;
+                    foreach ($pTotals as $p => $pTotal) {
+
+                        if ($countOffset >= $offset + $limit) {
+                            break;
+                        }
+
+                        $lastCountOffset = $countOffset;
+                        $countOffset += $pTotal;
+
+                        if ($countOffset > $offset) {
+
+                            if ($lastCountOffset < $offset) {
+                                $pOffset = $countOffset - $offset;
+                            } else {
+                                $pOffset = 0;
+                            }
+
+                            $pLimit = min($pTotal - $pOffset, $limit - $countLimit);
+
+                            $countLimit += $pLimit;
+
+                            $partitions[] = array(
+                                'name' => $p,
+                                'offset' => $pOffset,
+                                'limit' => $pLimit,
+                            );
+                        }
+                    }
+
                     $rows = array();
-                    foreach ($this->config['partitions'] as $partition) {
-                        $tmpRows = $db->getObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $sql));
+                    foreach ($partitions as $partition) {
+                        $tmpSql = str_replace(':partition', 'PARTITION(' . $partition['name'].')', $sql);
+                        $tmpSql .= ' LIMIT ' . $partition['offset'] . ', ' . $partition['limit'];
+                        $tmpRows = $db->getObjects($tmpSql);
                         $rows = array_merge($rows, $tmpRows);
                     }
                 } else {
+                    $sql .= ' LIMIT ' . $offset . ', ' . $limit;
                     $rows = $db->getObjects(str_replace(':partition', '', $sql));
                 }
             }
