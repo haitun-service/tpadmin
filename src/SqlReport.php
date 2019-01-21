@@ -46,11 +46,6 @@ trait SqlReport
                 $cache = $this->config['cache'];
             }
 
-            $pagination = true;
-            if (isset($this->config['pagination'])) {
-                $pagination = $this->config['pagination'];
-            }
-
             $where = $this->buildWhere(Request::post(null, null, ''));
 
             $sql = $this->config['sql']['count'];
@@ -82,38 +77,43 @@ trait SqlReport
 
             $db = Be::getDb();
 
-
-            $total = 0;
+            $total = null;
             $pTotals = array();
-            if ($pagination) {
 
-                $cacheKey = null;
-                $total = null;
-                if ($cache) {
-                    $cacheKey = 'SqlReport:' . $sql;
-                    $cacheValue = Cache::get($cacheKey);
-                    if ($cacheValue) {
-                        $total = $cacheValue;
-                    }
+            $cacheKey = null;
+            $cacheKeyTotals = null;
+            if ($cache) {
+                $cacheKey = 'SqlReport:' . $sql;
+                $cacheValue = Cache::get($cacheKey);
+                if ($cacheValue) {
+                    $total = $cacheValue;
                 }
 
-                if ($total === null) {
-                    $pos = strpos($sql, ':partition');
-                    if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
-                        $total = 0;
-                        foreach ($this->config['partitions'] as $partition) {
-                            $tmpTotal = intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
-                            if ($tmpTotal == 0) continue;
-                            $pTotals[$partition] = $tmpTotal;
-                            $total += $tmpTotal;
-                        }
-                    } else {
-                        $total = $db->getValue(str_replace(':partition', '', $sql));
+                $cacheKeyTotals = 'SqlReport:pTotals:' . $sql;
+                $cacheValue = Cache::get($cacheKeyTotals);
+                if ($cacheValue) {
+                    $pTotals = $cacheValue;
+                }
+            }
+
+            if ($total === null) {
+                $pos = strpos($sql, ':partition');
+                if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
+                    $total = 0;
+                    foreach ($this->config['partitions'] as $partition) {
+                        $tmpTotal = intval($db->getValue(str_replace(':partition', 'PARTITION(' . $partition.')', $sql)));
+                        if ($tmpTotal == 0) continue;
+                        $pTotals[$partition] = $tmpTotal;
+                        $total += $tmpTotal;
                     }
+
+                } else {
+                    $total = $db->getValue(str_replace(':partition', '', $sql));
                 }
 
                 if ($cache) {
                     Cache::set($cacheKey, $total, 600);
+                    Cache::set($cacheKeyTotals, $pTotals, 600);
                 }
             }
 
@@ -232,13 +232,8 @@ trait SqlReport
                 }
             }
 
-            if ($pagination) {
-                Response::set('total', $total);
-                Response::set('rows', $rows);
-            } else {
-                Response::setData($rows);
-            }
-
+            Response::set('total', $total);
+            Response::set('rows', $rows);
             Response::ajax();
         }
 
