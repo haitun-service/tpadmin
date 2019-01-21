@@ -180,7 +180,7 @@ trait SqlReport
                         if ($countOffset > $offset) {
 
                             if ($lastCountOffset < $offset) {
-                                $pOffset = $countOffset - $offset;
+                                $pOffset = $offset - $lastCountOffset;
                             } else {
                                 $pOffset = 0;
                             }
