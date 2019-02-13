@@ -238,6 +238,7 @@ trait DailyAggsReport
     public function export()
     {
         set_time_limit(3600);
+        ini_set('memory_limit', '1g');
 
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename=' . date('YmdHis') . '.csv');
@@ -300,7 +301,7 @@ trait DailyAggsReport
 
             $rows = array();
             foreach ($this->config['partitions'] as $partition) {
-                $tmpRows = $db->getYieldObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $sql));
+                $tmpRows = $db->getObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $sql));
                 foreach ($tmpRows as $x) {
                     if (!isset($rows[$x->aggs_date.':'.$x->aggs_key])) {
                         $rows[$x->aggs_date.':'.$x->aggs_key] = 1;

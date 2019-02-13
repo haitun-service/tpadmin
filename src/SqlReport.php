@@ -248,6 +248,7 @@ trait SqlReport
     public function export()
     {
         set_time_limit(3600);
+        ini_set('memory_limit', '1g');
 
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename=' . date('YmdHis') . '.csv');
@@ -295,7 +296,7 @@ trait SqlReport
         if ($pos !== false && isset($this->config['partitions']) && is_array($this->config['partitions'])) {
 
             foreach ($this->config['partitions'] as $partition) {
-                $rows = $db->getYieldObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $sql));
+                $rows = $db->getObjects(str_replace(':partition', 'PARTITION(' . $partition.')', $sql));
                 foreach ($rows as $row) {
                     $values = array();
                     foreach ($this->config['fields'] as $key => $field) {
